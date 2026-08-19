@@ -1,5 +1,9 @@
-name: Run Tests
+name: CI Test Matrix
+
 on:
+  push:
+    branches:
+      - main
   pull_request:
     branches:
       - main
@@ -12,21 +16,21 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        node: [18, 20, 22, 24]
+        node: [18, 20, 22]
         os:
-          - namespace-profile-default
-          - namespace-profile-macos-arm64
-          - namespace-profile-windows-amd64
+          - ubuntu-latest
+          - windows-latest
+          - macos-latest
 
     runs-on: ${{ matrix.os }}
-    name: Run Tests - Node v${{ matrix.node }} / ${{ matrix.os }}
+    name: Test - Node v${{ matrix.node }} on ${{ matrix.os }}
 
     steps:
-      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
         with:
-          persist-credentials: false
-      - uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4
-      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+          version: 9
+      - uses: actions/setup-node@v4
         with:
           cache: 'pnpm'
           node-version: ${{ matrix.node }}
@@ -34,14 +38,19 @@ jobs:
       - name: Install dependencies
         run: pnpm install
 
-      - name: Run syntax tests
-        working-directory: packages/tailwindcss-language-syntax
-        run: pnpm run build && pnpm run test
+      - name: Build Core Class Fixer
+        run: pnpm --filter=@tailwindcss/class-fixer run build
 
-      - name: Run service tests
-        working-directory: packages/tailwindcss-language-service
-        run: pnpm run build && pnpm run test
+      - name: Build CLI Fixer
+        run: pnpm --filter=@tailwindcss/cli-fixer run build
 
-      - name: Run server tests
-        working-directory: packages/tailwindcss-language-server
-        run: pnpm run build && pnpm run test
+      - name: Build Language Service & Server
+        run: |
+          pnpm --filter=@tailwindcss/language-syntax run build
+          pnpm --filter=@tailwindcss/language-service run build
+
+      - name: Check VS Code Extension Types & Build
+        run: pnpm --filter=vscode-tailwindcss run build
+
+      - name: Run Test Suite across All Packages
+        run: pnpm run test

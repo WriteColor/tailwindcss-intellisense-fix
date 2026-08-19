@@ -1,2 +1,110 @@
-node_modules
-/*.vsix
+# ==============================================================================
+# Dependencies & Package Managers
+# ==============================================================================
+node_modules/
+.pnpm-store/
+.pnpm-debug.log*
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+.npm
+.yarn/
+.yarn-cache/
+
+# ==============================================================================
+# Build & Compilation Outputs
+# ==============================================================================
+dist/
+out/
+build/
+*.tsbuildinfo
+.turbo/
+.cache/
+.parcel-cache/
+packages/*/dist/
+packages/*/out/
+packages/*/bin/*.EXE
+packages/*/bin/*.exe
+
+# ==============================================================================
+# VSIX Extensions & Release Packages (Built on CI / Local release)
+# ==============================================================================
+*.vsix
+*.tgz
+*.zip
+*.tar.gz
+ThirdPartyNotices.txt
+packages/*/ThirdPartyNotices.txt
+
+# ==============================================================================
+# Test Fixtures & Local Artifacts
+# ==============================================================================
+tests/fixtures/**/node_modules/
+tests/fixtures/**/.pnpm/
+tests/fixtures/**/dist/
+packages/*/tests/fixtures/**/node_modules/
+packages/*/tests/fixtures/**/.pnpm/
+packages/*/tests/fixtures/**/dist/
+coverage/
+.nyc_output/
+*.lcov
+.debug/
+
+# ==============================================================================
+# Environment & Secrets
+# ==============================================================================
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+*.pem
+*.key
+
+# ==============================================================================
+# Operating System Files
+# ==============================================================================
+# Windows
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+*.stackdump
+[Dd]esktop.ini
+$RECYCLE.BIN/
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+.DocumentRevisions-V100
+.fseventsd
+.Spotlight-V100
+.TemporaryItems
+.Trashes
+.VolumeIcon.icns
+.com.apple.timemachine.donotpresent
+
+# Linux
+*~
+.fuse_hidden*
+.directory
+.Trash-*
+
+# ==============================================================================
+# IDEs & Code Editors
+# ==============================================================================
+.idea/
+*.sublime-project
+*.sublime-workspace
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+.vim/
+.history/
+.gemini/
+.agents/scratch/

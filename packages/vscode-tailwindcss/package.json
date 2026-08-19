@@ -65,6 +65,16 @@
         "command": "tailwindCSS.sortSelection",
         "title": "Tailwind CSS: Sort Selection",
         "enablement": "editorHasSelection && (resourceScheme == file || resourceScheme == vscode-remote) && tailwindCSS.activeTextEditorSupportsClassSorting"
+      },
+      {
+        "command": "tailwindCSS.fixAll",
+        "title": "Tailwind CSS: Fix, Optimize & Sort Classes in Current File",
+        "enablement": "(resourceScheme == file || resourceScheme == vscode-remote)"
+      },
+      {
+        "command": "tailwindCSS.fixWorkspace",
+        "title": "Tailwind CSS: Fix All Tailwind Issues in Entire Workspace",
+        "enablement": "(resourceScheme == file || resourceScheme == vscode-remote)"
       }
     ],
     "grammars": [
@@ -145,6 +155,37 @@
     "configuration": {
       "title": "Tailwind CSS IntelliSense",
       "properties": {
+        "tailwindCSS.autoFix.enable": {
+          "type": "boolean",
+          "default": true,
+          "markdownDescription": "Enable automatic class deduplication, conflict resolution, migration and canonical sorting."
+        },
+        "tailwindCSS.autoFix.dedupe": {
+          "type": "boolean",
+          "default": true,
+          "markdownDescription": "Automatically deduplicate identical Tailwind CSS classes."
+        },
+        "tailwindCSS.autoFix.resolveConflicts": {
+          "type": "boolean",
+          "default": true,
+          "markdownDescription": "Automatically resolve conflicting utility classes on the same element."
+        },
+        "tailwindCSS.autoFix.sort": {
+          "type": "boolean",
+          "default": true,
+          "markdownDescription": "Automatically sort classes in canonical order matching official Tailwind recommendations."
+        },
+        "tailwindCSS.autoFix.migrateVersion": {
+          "type": "string",
+          "enum": ["v4", "v3", "off"],
+          "default": "v4",
+          "markdownDescription": "Automatically migrate deprecated Tailwind utility classes to target version."
+        },
+        "tailwindCSS.autoFix.fixTypos": {
+          "type": "boolean",
+          "default": true,
+          "markdownDescription": "Automatically correct common typographical errors in Tailwind class names."
+        },
         "tailwindCSS.emmetCompletions": {
           "type": "boolean",
           "default": false,
@@ -386,20 +427,25 @@
   "scripts": {
     "_esbuild": "node ../../esbuild.mjs src/extension.ts src/server.ts src/cssServer.ts src/oxide-helper.ts --outdir=dist",
     "dev": "concurrently --raw --kill-others \"pnpm run watch\" \"pnpm run check --watch\"",
-    "watch": "pnpm run clean && pnpm run _esbuild --watch",
     "build": "pnpm run check && pnpm run clean && pnpm run _esbuild --minify && move-file dist/server.js dist/tailwindServer.js && move-file dist/cssServer.js dist/tailwindModeServer.js",
-    "package": "vsce package --no-dependencies",
-    "publish": "vsce publish --no-dependencies",
-    "copy:notices": "cp ../tailwindcss-language-server/ThirdPartyNotices.txt ./dist/ThirdPartyNotices.txt",
-    "vscode:prepublish": "pnpm run build && pnpm run copy:notices",
+    "prepackage": "pnpm run build && pnpm run copy:notices",
+    "package": "pnpm run prepackage && vsce package --no-dependencies",
+    "publish": "pnpm run prepackage && vsce publish --no-dependencies",
+    "copy:notices": "node -e \"const fs=require('fs'); if(fs.existsSync('../tailwindcss-language-server/ThirdPartyNotices.txt')) fs.copyFileSync('../tailwindcss-language-server/ThirdPartyNotices.txt', './dist/ThirdPartyNotices.txt');\"",
+
+
+
     "clean": "rimraf dist",
     "check": "tsc --noEmit"
   },
   "devDependencies": {
+    "@tailwindcss/class-fixer": "workspace:*",
     "@tailwindcss/language-server": "workspace:*",
     "@tailwindcss/language-service": "workspace:*",
     "@types/braces": "3.0.1",
+    "@types/node": "^20.11.0",
     "@types/picomatch": "^2.3.3",
+
     "@types/vscode": "1.65.0",
     "@vscode/vsce": "2.21.1",
     "braces": "3.0.3",

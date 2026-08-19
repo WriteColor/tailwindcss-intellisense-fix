@@ -1,5 +1,5 @@
 {
-  "include": ["src", "../../types"],
+  "include": ["src", "../../types", "../tailwindcss-class-fixer/src"],
   "compilerOptions": {
     "module": "ES2022",
     "lib": ["ES2022"],
@@ -7,7 +7,7 @@
     "importHelpers": true,
     "declaration": true,
     "sourceMap": true,
-    "rootDir": "./src",
+    "rootDir": "..",
     "strict": false,
     "noUnusedLocals": false,
     "noUnusedParameters": false,
@@ -17,6 +17,11 @@
     "skipLibCheck": true,
     "jsx": "react",
     "esModuleInterop": true,
-    "isolatedDeclarations": true
+    "isolatedDeclarations": true,
+    "baseUrl": ".",
+    "paths": {
+      "@tailwindcss/class-fixer": ["../tailwindcss-class-fixer/src/index.ts"],
+      "@tailwindcss/class-fixer/*": ["../tailwindcss-class-fixer/src/*"]
+    }
   }
 }

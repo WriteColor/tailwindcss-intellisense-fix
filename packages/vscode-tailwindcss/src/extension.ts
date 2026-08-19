@@ -35,6 +35,8 @@ import normalizePath from 'normalize-path'
 import * as servers from './servers/index'
 import { isExcluded, mergeExcludes } from './exclusions'
 import { createApi } from './api'
+import { fixCurrentFileCommand } from './commands/fixAllCommand'
+import { fixWorkspaceCommand } from './commands/workspaceFixCommand'
 
 const colorNames = Object.keys(namedColors)
 
@@ -204,6 +206,27 @@ export async function activate(context: ExtensionContext) {
       }
     }),
   )
+
+  context.subscriptions.push(
+    commands.registerCommand('tailwindCSS.fixAll', async () => {
+      try {
+        await fixCurrentFileCommand()
+      } catch (error) {
+        Window.showErrorMessage(`Couldn’t fix Tailwind classes: ${(error as any)?.message}`)
+      }
+    }),
+  )
+
+  context.subscriptions.push(
+    commands.registerCommand('tailwindCSS.fixWorkspace', async () => {
+      try {
+        await fixWorkspaceCommand()
+      } catch (error) {
+        Window.showErrorMessage(`Couldn’t fix workspace Tailwind classes: ${(error as any)?.message}`)
+      }
+    }),
+  )
+
 
   context.subscriptions.push(
     Window.onDidChangeActiveTextEditor(async () => {

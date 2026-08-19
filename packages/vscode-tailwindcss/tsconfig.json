@@ -2,23 +2,28 @@
   "compilerOptions": {
     "module": "commonjs",
     "target": "ES2022",
-    "lib": ["ES2022"],
+    "lib": ["ES2022", "DOM"],
+    "types": ["node"],
     "rootDir": "..",
     "sourceMap": true,
     "moduleResolution": "node",
     "esModuleInterop": true,
+    "skipLibCheck": true,
     "allowJs": true,
     "resolveJsonModule": true,
     "baseUrl": "..",
     "paths": {
       "@tailwindcss/language-service/*": ["../packages/tailwindcss-language-service/*"],
-      "@tailwindcss/language-server/*": ["../packages/tailwindcss-language-server/*"]
+      "@tailwindcss/language-server/*": ["../packages/tailwindcss-language-server/*"],
+      "@tailwindcss/class-fixer": ["../packages/tailwindcss-class-fixer/src/index.ts"],
+      "@tailwindcss/class-fixer/*": ["../packages/tailwindcss-class-fixer/src/*"]
     }
   },
   "include": [
     "src",
     "../packages/tailwindcss-language-service",
     "../packages/tailwindcss-language-server",
+    "../packages/tailwindcss-class-fixer",
     "../../types"
   ]
 }

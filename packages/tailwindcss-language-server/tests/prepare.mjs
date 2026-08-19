@@ -16,10 +16,12 @@ const fixtures = await glob({
 
 const execAsync = promisify(exec)
 
-await Promise.all(
-  fixtures.map(async (fixture) => {
-    console.log(`Installing dependencies for ${path.relative(root, fixture)}`)
+for (const fixture of fixtures) {
+  console.log(`Installing dependencies for ${path.relative(root, fixture)}`)
+  try {
+    await execAsync('pnpm install --no-frozen-lockfile --ignore-workspace', { cwd: path.dirname(fixture) })
+  } catch (err) {
+    console.warn(`Warning: Fixture install issue in ${fixture}:`, err.message)
+  }
+}
 
-    await execAsync('npm install', { cwd: path.dirname(fixture) })
-  }),
-)

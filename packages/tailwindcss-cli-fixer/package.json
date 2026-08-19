@@ -1,0 +1,24 @@
+{
+  "name": "@tailwindcss/cli-fixer",
+  "version": "0.16.0",
+  "description": "Headless CLI for auto-fixing, cleaning, and optimizing Tailwind CSS classes",
+  "main": "dist/index.js",
+  "bin": {
+    "tailwind-fix": "dist/cli.js"
+  },
+  "scripts": {
+    "start": "node dist/cli.js",
+    "build": "tsc",
+    "test": "vitest"
+  },
+  "dependencies": {
+    "@tailwindcss/class-fixer": "workspace:*",
+    "minimist": "^1.2.8"
+  },
+  "devDependencies": {
+    "@types/minimist": "^1.2.5",
+    "@types/node": "^20.11.0",
+    "typescript": "^5.8.3",
+    "vitest": "^3.2.6"
+  }
+}

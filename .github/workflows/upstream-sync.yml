@@ -1,0 +1,59 @@
+name: Upstream Sync & Release Check
+
+on:
+  schedule:
+    # Run daily at 04:00 UTC
+    - cron: '0 4 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  check-and-sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Fork
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Git Identity
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'pnpm'
+
+      - name: Add Upstream Remote
+        run: |
+          git remote add upstream https://github.com/tailwindlabs/tailwindcss-intellisense.git || true
+          git fetch upstream --tags --prune
+
+      - name: Check for New Upstream Releases
+        id: sync_check
+        run: |
+          node scripts/upstream-sync.mjs
+
+      - name: Install & Run Test Suite
+        if: steps.sync_check.outputs.has_updates == 'true'
+        run: |
+          pnpm install
+          pnpm run build
+          pnpm run test
+
+      - name: Commit and Push Synchronized Version
+        if: steps.sync_check.outputs.has_updates == 'true'
+        run: |
+          git push origin main --tags

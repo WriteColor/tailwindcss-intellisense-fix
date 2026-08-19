@@ -20,6 +20,7 @@ import { flatten, dedupeBy } from '../util/array'
 import { provideCssConflictCodeActions } from './provideCssConflictCodeActions'
 import { provideInvalidApplyCodeActions } from './provideInvalidApplyCodeActions'
 import { provideSuggestionCodeActions } from './provideSuggestionCodeActions'
+import { provideAutoFixCodeActions } from './provideAutoFixCodeActions'
 
 async function getDiagnosticsFromCodeActionParams(
   state: State,
@@ -61,7 +62,7 @@ export async function doCodeActions(
       .filter(Boolean) as DiagnosticKind[],
   )
 
-  return Promise.all(
+  const diagnosticActions = await Promise.all(
     diagnostics.map((diagnostic) => {
       if (isInvalidApplyDiagnostic(diagnostic)) {
         return provideInvalidApplyCodeActions(state, document, diagnostic)
@@ -85,7 +86,10 @@ export async function doCodeActions(
 
       return []
     }),
-  )
-    .then(flatten)
-    .then((x) => dedupeBy(x, (item) => JSON.stringify(item.edit)))
+  ).then(flatten)
+
+  const autoFixActions = await provideAutoFixCodeActions(state, params, document)
+
+  return dedupeBy([...diagnosticActions, ...autoFixActions], (item) => JSON.stringify(item.edit))
 }
+

@@ -1,0 +1,19 @@
+{
+  "name": "@tailwindcss/class-fixer",
+  "version": "0.16.0",
+  "main": "dist/index.js",
+  "typings": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "test": "vitest"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "@types/node": "^20.11.0",
+    "typescript": "^5.8.3",
+    "vitest": "^3.2.6"
+  }
+}
