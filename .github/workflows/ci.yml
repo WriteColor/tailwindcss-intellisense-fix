@@ -51,5 +51,19 @@ jobs:
       - name: Check VS Code Extension Types & Build
         run: pnpm --filter=vscode-tailwindcss run build
 
-      - name: Run Test Suite across All Packages
-        run: pnpm run test
+      - name: Run Class Fixer & CLI Tests
+        run: |
+          pnpm --filter=@tailwindcss/class-fixer run test
+          pnpm --filter=@tailwindcss/cli-fixer run test
+
+      - name: Run Language Syntax & Service Tests
+        run: |
+          pnpm --filter=@tailwindcss/language-syntax run test
+          pnpm --filter=@tailwindcss/language-service run test
+
+      - name: Run LSP Code Actions Integration Tests
+        run: pnpm --filter=@tailwindcss/language-server test run tests/code-actions/
+
+      - name: Package VSIX Extension Verification
+        run: pnpm --filter=vscode-tailwindcss run package
+
