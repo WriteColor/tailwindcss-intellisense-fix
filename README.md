@@ -124,13 +124,14 @@ Works seamlessly across all frameworks and languages without manual regex config
 ### Installing in VS Code / Cursor / Windsurf / VSCodium
 ```bash
 # Using VS Code CLI
-code --install-extension vscode-tailwindcss-0.16.0.vsix
+code --install-extension tailwindcss-intellisense-fix-0.16.1.vsix
 
 # Using Cursor CLI
-cursor --install-extension vscode-tailwindcss-0.16.0.vsix
+cursor --install-extension tailwindcss-intellisense-fix-0.16.1.vsix
 
 # Using VSCodium CLI
-codium --install-extension vscode-tailwindcss-0.16.0.vsix
+codium --install-extension tailwindcss-intellisense-fix-0.16.1.vsix
+
 ```
 
 ---

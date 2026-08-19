@@ -1,8 +1,12 @@
 {
   "name": "@tailwindcss/class-fixer",
-  "version": "0.16.0",
+  "version": "0.16.1",
+  "author": "WriteColor",
+  "license": "MIT",
+  "homepage": "https://github.com/WriteColor/tailwindcss-intellisense-fix",
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",
+
   "files": [
     "dist"
   ],

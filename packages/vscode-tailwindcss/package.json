@@ -1,30 +1,32 @@
 {
-  "name": "vscode-tailwindcss",
+  "name": "tailwindcss-intellisense-fix",
   "version": "0.16.1",
-  "displayName": "Tailwind CSS IntelliSense",
-  "description": "Intelligent Tailwind CSS tooling for VS Code",
-  "author": "Brad Cornes <hello@bradley.dev>",
+  "displayName": "Tailwind CSS IntelliSense Fix & Auto-Optimizer",
+  "description": "Next-generation intelligent Tailwind CSS tooling, auto-repair, conflict resolution, canonical sorting, and universal template support by WriteColor.",
+  "author": "WriteColor",
   "license": "MIT",
-  "homepage": "https://github.com/tailwindlabs/tailwindcss-intellisense",
+  "homepage": "https://github.com/WriteColor/tailwindcss-intellisense-fix",
   "bugs": {
-    "url": "https://github.com/tailwindlabs/tailwindcss-intellisense/issues",
-    "email": "hello@bradley.dev"
+    "url": "https://github.com/WriteColor/tailwindcss-intellisense-fix/issues"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/tailwindlabs/tailwindcss-intellisense.git"
+    "url": "https://github.com/WriteColor/tailwindcss-intellisense-fix.git"
   },
-  "publisher": "bradlc",
-  "publisherDisplayName": "Tailwind Labs",
+  "publisher": "writecolor",
+  "publisherDisplayName": "WriteColor",
   "keywords": [
-
     "tailwind",
     "tailwindcss",
     "css",
     "intellisense",
     "autocomplete",
+    "autofix",
+    "fixer",
+    "sorter",
     "vscode"
   ],
+
   "engines": {
     "vscode": "^1.67.0"
   },

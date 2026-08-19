@@ -61,9 +61,10 @@ jobs:
 
       - name: Package VS Code / Antigravity Extension (.vsix)
         run: |
-          pnpm --filter=vscode-tailwindcss run package
+          pnpm --filter=tailwindcss-intellisense-fix run package
           mkdir -p release-artifacts
           cp packages/vscode-tailwindcss/*.vsix release-artifacts/
+
 
       - name: Generate Checksums
         working-directory: release-artifacts

@@ -123,14 +123,14 @@ Detecta clases en cualquier entorno sin necesidad de configurar expresiones regu
 
 ### Instalación en VS Code / Cursor / Windsurf / VSCodium
 ```bash
-# Mediante la CLI de VS Code
-code --install-extension vscode-tailwindcss-0.16.0.vsix
+# Usando CLI de VS Code
+code --install-extension tailwindcss-intellisense-fix-0.16.1.vsix
 
-# Mediante la CLI de Cursor
-cursor --install-extension vscode-tailwindcss-0.16.0.vsix
+# Usando CLI de Cursor
+cursor --install-extension tailwindcss-intellisense-fix-0.16.1.vsix
 
-# Mediante la CLI de VSCodium
-codium --install-extension vscode-tailwindcss-0.16.0.vsix
+# Usando CLI de VSCodium
+codium --install-extension tailwindcss-intellisense-fix-0.16.1.vsix
 ```
 
 ---

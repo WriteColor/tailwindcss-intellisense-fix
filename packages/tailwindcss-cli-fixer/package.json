@@ -1,8 +1,12 @@
 {
   "name": "@tailwindcss/cli-fixer",
-  "version": "0.16.0",
-  "description": "Headless CLI for auto-fixing, cleaning, and optimizing Tailwind CSS classes",
+  "version": "0.16.1",
+  "description": "Headless CLI for auto-fixing, cleaning, and optimizing Tailwind CSS classes by WriteColor",
+  "author": "WriteColor",
+  "license": "MIT",
+  "homepage": "https://github.com/WriteColor/tailwindcss-intellisense-fix",
   "main": "dist/index.js",
+
   "bin": {
     "tailwind-fix": "dist/cli.js"
   },

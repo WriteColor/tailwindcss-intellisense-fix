@@ -55,7 +55,8 @@ jobs:
           pnpm --filter=@tailwindcss/language-syntax run test
           pnpm --filter=@tailwindcss/language-service run test
           pnpm --filter=@tailwindcss/language-server test run tests/code-actions/
-          pnpm --filter=vscode-tailwindcss run package
+          pnpm --filter=tailwindcss-intellisense-fix run package
+
 
       - name: Commit and Push Synchronized Version
         if: steps.sync_check.outputs.has_updates == 'true'

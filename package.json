@@ -2,8 +2,8 @@
   "name": "tailwindcss-intellisense",
   "private": true,
   "scripts": {
-    "build": "pnpm -r --filter=!vscode-tailwindcss run build",
-    "build:extension": "pnpm --filter=vscode-tailwindcss run package",
+    "build": "pnpm -r --filter=!tailwindcss-intellisense-fix run build",
+    "build:extension": "pnpm --filter=tailwindcss-intellisense-fix run package",
     "test": "pnpm -r run test",
     "tailwind-fix": "node packages/tailwindcss-cli-fixer/dist/cli.js",
     "version-packages": "node ./scripts/version-packages.mjs"
