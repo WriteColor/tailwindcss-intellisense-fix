@@ -157,8 +157,9 @@
       }
     ],
     "configuration": {
-      "title": "Tailwind CSS IntelliSense",
+      "title": "Tailwind CSS IntelliSense Fix & Auto-Optimizer",
       "properties": {
+
         "tailwindCSS.autoFix.enable": {
           "type": "boolean",
           "default": true,
