@@ -3,7 +3,7 @@ import type { ExtractedClassRange } from './types'
 // Regex for standard HTML / JSX / Template class attributes
 const ATTR_REGEX = /(?:class|className|ngClass|class:list|\[class\]|\[ngClass\])\s*=\s*(["'`{])([\s\S]*?)\1/gi
 
-// Regex for helper function calls: clsx, cva, twMerge, cn, classNames, tw`...`
+// Regex for helper function calls: clsx, cva, twMerge, cn, classnames, tw`...`
 const HELPER_REGEX = /\b(?:clsx|cva|twMerge|cn|classnames|tw)\s*(?:\(\s*|\`)([\s\S]*?)(?:\)|\`)/gi
 
 // Regex for string literals inside code or helpers
@@ -44,6 +44,71 @@ export function extractClassRanges(content: string, fileName?: string): Extracte
     })
   }
 
+  // Helper to extract segments from strings containing template interpolation ${...}
+  function extractTemplateSegments(text: string, baseOffset: number, delimiter: string, context: ExtractedClassRange['context']) {
+    if (!text.includes('${')) {
+      addRange({
+        start: baseOffset,
+        end: baseOffset + text.length,
+        raw: text,
+        delimiter,
+        context,
+      })
+      return
+    }
+
+    // Split around ${...} interpolations
+    const interpolationRegex = /\$\{([\s\S]*?)\}/g
+    let lastIndex = 0
+    let match: RegExpExecArray | null
+
+    while ((match = interpolationRegex.exec(text)) !== null) {
+      // 1. Static text before ${
+      const staticChunk = text.slice(lastIndex, match.index)
+      if (staticChunk.trim().length > 0) {
+        const chunkStart = baseOffset + lastIndex
+        addRange({
+          start: chunkStart,
+          end: chunkStart + staticChunk.length,
+          raw: staticChunk,
+          delimiter,
+          context,
+        })
+      }
+
+      // 2. Extract string literals inside the ${ ... } expression
+      const exprContent = match[1]
+      const exprStart = baseOffset + match.index + 2
+      let innerStrMatch: RegExpExecArray | null
+      while ((innerStrMatch = STRING_LITERAL_REGEX.exec(exprContent)) !== null) {
+        const subRaw = innerStrMatch[2]
+        const subStart = exprStart + innerStrMatch.index + 1
+        addRange({
+          start: subStart,
+          end: subStart + subRaw.length,
+          raw: subRaw,
+          delimiter: innerStrMatch[1],
+          context: 'jsx',
+        })
+      }
+
+      lastIndex = match.index + match[0].length
+    }
+
+    // Static text after last }
+    const tailChunk = text.slice(lastIndex)
+    if (tailChunk.trim().length > 0) {
+      const tailStart = baseOffset + lastIndex
+      addRange({
+        start: tailStart,
+        end: tailStart + tailChunk.length,
+        raw: tailChunk,
+        delimiter,
+        context,
+      })
+    }
+  }
+
   // 2. Check HTML / JSX / Template class attributes
   let attrMatch: RegExpExecArray | null
   while ((attrMatch = ATTR_REGEX.exec(content)) !== null) {
@@ -51,8 +116,7 @@ export function extractClassRanges(content: string, fileName?: string): Extracte
     const delimiter = attrMatch[1]
     const valueStart = attrMatch.index + attrMatch[0].indexOf(rawAttrValue)
 
-    // If it's a simple quote string literal
-    if (delimiter === '"' || delimiter === "'" || delimiter === '`') {
+    if (delimiter === '"' || delimiter === "'") {
       addRange({
         start: valueStart,
         end: valueStart + rawAttrValue.length,
@@ -60,20 +124,25 @@ export function extractClassRanges(content: string, fileName?: string): Extracte
         delimiter,
         context: 'html',
       })
+    } else if (delimiter === '`') {
+      extractTemplateSegments(rawAttrValue, valueStart, delimiter, 'html')
     } else {
-      // Dynamic expression like class={clsx("p-4", "p-2")}
+      // Dynamic expression like class={...}
       let strMatch: RegExpExecArray | null
       while ((strMatch = STRING_LITERAL_REGEX.exec(rawAttrValue)) !== null) {
         const subRaw = strMatch[2]
         const subStart = valueStart + strMatch.index + 1
-        const subEnd = subStart + subRaw.length
-        addRange({
-          start: subStart,
-          end: subEnd,
-          raw: subRaw,
-          delimiter: strMatch[1],
-          context: 'jsx',
-        })
+        if (strMatch[1] === '`') {
+          extractTemplateSegments(subRaw, subStart, strMatch[1], 'jsx')
+        } else {
+          addRange({
+            start: subStart,
+            end: subStart + subRaw.length,
+            raw: subRaw,
+            delimiter: strMatch[1],
+            context: 'jsx',
+          })
+        }
       }
     }
   }
@@ -86,27 +155,24 @@ export function extractClassRanges(content: string, fileName?: string): Extracte
 
     if (helperMatch[0].includes('`')) {
       // Tagged template literal: tw`p-4 text-white`
-      addRange({
-        start: argsStart,
-        end: argsStart + helperArgs.length,
-        raw: helperArgs,
-        delimiter: '`',
-        context: 'helper',
-      })
+      extractTemplateSegments(helperArgs, argsStart, '`', 'helper')
     } else {
       // Function call arguments: cn('p-4', 'text-white')
       let strMatch: RegExpExecArray | null
       while ((strMatch = STRING_LITERAL_REGEX.exec(helperArgs)) !== null) {
         const subRaw = strMatch[2]
         const subStart = argsStart + strMatch.index + 1
-        const subEnd = subStart + subRaw.length
-        addRange({
-          start: subStart,
-          end: subEnd,
-          raw: subRaw,
-          delimiter: strMatch[1],
-          context: 'helper',
-        })
+        if (strMatch[1] === '`') {
+          extractTemplateSegments(subRaw, subStart, strMatch[1], 'helper')
+        } else {
+          addRange({
+            start: subStart,
+            end: subStart + subRaw.length,
+            raw: subRaw,
+            delimiter: strMatch[1],
+            context: 'helper',
+          })
+        }
       }
     }
   }

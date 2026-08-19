@@ -154,7 +154,7 @@ async function installDependenciesIn(dir: string) {
   console.log(`Installing dependencies in ${dir}`)
 
   await new Promise((resolve, reject) => {
-    proc.exec('npm install --package-lock=false', { cwd: dir }, (err, res) => {
+    proc.exec('pnpm install --no-frozen-lockfile --ignore-workspace', { cwd: dir }, (err, res) => {
       if (err) {
         reject(err)
       } else {
@@ -162,6 +162,7 @@ async function installDependenciesIn(dir: string) {
       }
     })
   })
+
 }
 
 export const css: Dedent = dedent

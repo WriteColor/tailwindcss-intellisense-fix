@@ -1,151 +1,159 @@
-import type { ClassFixChange } from './types'
+import type { ClassFixChange, ParsedClass } from './types'
 
-interface ParsedClass {
-  raw: string
-  variants: string
-  important: boolean
-  base: string
-  group: string | null
-}
+export function parseClass(rawClass: string): ParsedClass {
+  const lastColon = rawClass.lastIndexOf(':')
+  const variants = lastColon !== -1 ? rawClass.slice(0, lastColon + 1) : ''
+  let base = lastColon !== -1 ? rawClass.slice(lastColon + 1) : rawClass
+  const important = base.startsWith('!') || base.endsWith('!')
+  base = base.replace(/!/g, '')
 
-// Utility group patterns that conflict when sharing identical variants
-const CONFLICT_GROUPS: Array<{ name: string; pattern: RegExp }> = [
-  // Display
-  { name: 'display', pattern: /^(block|inline-block|inline|flex|inline-flex|table|inline-table|table-caption|table-cell|table-column|table-column-group|table-footer-group|table-header-group|table-row-group|table-row|flow-root|grid|inline-grid|contents|list-item|hidden)$/ },
-  // Position
-  { name: 'position', pattern: /^(static|fixed|absolute|relative|sticky)$/ },
-  // Overflow
-  { name: 'overflow-all', pattern: /^overflow-(auto|hidden|clip|visible|scroll)$/ },
-  { name: 'overflow-x', pattern: /^overflow-x-(auto|hidden|clip|visible|scroll)$/ },
-  { name: 'overflow-y', pattern: /^overflow-y-(auto|hidden|clip|visible|scroll)$/ },
-  // Padding
-  { name: 'p-all', pattern: /^p(-\d+|\/[^/]+|-[a-z0-9.]+|-\[[^\]]+\])$/ },
-  { name: 'px', pattern: /^px(-\d+|\/[^/]+|-[a-z0-9.]+|-\[[^\]]+\])$/ },
-  { name: 'py', pattern: /^py(-\d+|\/[^/]+|-[a-z0-9.]+|-\[[^\]]+\])$/ },
-  { name: 'pt', pattern: /^pt(-\d+|\/[^/]+|-[a-z0-9.]+|-\[[^\]]+\])$/ },
-  { name: 'pr', pattern: /^pr(-\d+|\/[^/]+|-[a-z0-9.]+|-\[[^\]]+\])$/ },
-  { name: 'pb', pattern: /^pb(-\d+|\/[^/]+|-[a-z0-9.]+|-\[[^\]]+\])$/ },
-  { name: 'pl', pattern: /^pl(-\d+|\/[^/]+|-[a-z0-9.]+|-\[[^\]]+\])$/ },
-  // Margin
-  { name: 'm-all', pattern: /^-?m(-\d+|\/[^/]+|-[a-z0-9.]+|-\[[^\]]+\])$/ },
-  { name: 'mx', pattern: /^-?mx(-\d+|\/[^/]+|-[a-z0-9.]+|-\[[^\]]+\])$/ },
-  { name: 'my', pattern: /^-?my(-\d+|\/[^/]+|-[a-z0-9.]+|-\[[^\]]+\])$/ },
-  { name: 'mt', pattern: /^-?mt(-\d+|\/[^/]+|-[a-z0-9.]+|-\[[^\]]+\])$/ },
-  { name: 'mr', pattern: /^-?mr(-\d+|\/[^/]+|-[a-z0-9.]+|-\[[^\]]+\])$/ },
-  { name: 'mb', pattern: /^-?mb(-\d+|\/[^/]+|-[a-z0-9.]+|-\[[^\]]+\])$/ },
-  { name: 'ml', pattern: /^-?ml(-\d+|\/[^/]+|-[a-z0-9.]+|-\[[^\]]+\])$/ },
-  // Sizing
-  { name: 'width', pattern: /^w-(auto|px|full|screen|min|max|fit|\d+|\d+\/\d+|-\[[^\]]+\]|\[[^\]]+\])$/ },
-  { name: 'min-w', pattern: /^min-w-(0|full|min|max|fit|\[[^\]]+\])$/ },
-  { name: 'max-w', pattern: /^max-w-(0|none|xs|sm|md|lg|xl|\d+xl|full|min|max|fit|prose|screen-[a-z0-9]+|\[[^\]]+\])$/ },
-  { name: 'height', pattern: /^h-(auto|px|full|screen|min|max|fit|\d+|\d+\/\d+|-\[[^\]]+\]|\[[^\]]+\])$/ },
-  { name: 'min-h', pattern: /^min-h-(0|full|screen|min|max|fit|\[[^\]]+\])$/ },
-  { name: 'max-h', pattern: /^max-h-(0|px|full|screen|min|max|fit|\d+|\[[^\]]+\])$/ },
-  // Colors & Backgrounds
-  { name: 'bg-color', pattern: /^bg-(?!repeat|no-repeat|auto|cover|contain|bottom|center|left|right|top|fixed|local|scroll|clip|origin)([a-z0-9\-]+|\[[^\]]+\])(\/[a-z0-9.%]+)?$/ },
-  { name: 'text-color', pattern: /^text-(?!left|center|right|justify|start|end|wrap|nowrap|balance|pretty|xs|sm|base|lg|xl|\d+xl)([a-z0-9\-]+|\[[^\]]+\])(\/[a-z0-9.%]+)?$/ },
-  { name: 'border-color', pattern: /^border-(?!collapse|separate|solid|dashed|dotted|double|hidden|none|0|2|4|8|t|r|b|l|x|y)([a-z0-9\-]+|\[[^\]]+\])(\/[a-z0-9.%]+)?$/ },
-  // Typography
-  { name: 'font-size', pattern: /^text-(xs|sm|base|lg|xl|\d+xl|\[[^\]]+\])$/ },
-  { name: 'font-weight', pattern: /^font-(thin|extralight|light|normal|medium|semibold|bold|extrabold|black|\[[^\]]+\])$/ },
-  { name: 'text-align', pattern: /^text-(left|center|right|justify|start|end)$/ },
-  { name: 'line-height', pattern: /^leading-(none|tight|snug|normal|relaxed|loose|\d+|\[[^\]]+\])$/ },
-  { name: 'letter-spacing', pattern: /^tracking-(tighter|tight|normal|wide|wider|widest|\[[^\]]+\])$/ },
-  // Flex & Grid
-  { name: 'flex-direction', pattern: /^flex-(row|row-reverse|col|col-reverse)$/ },
-  { name: 'flex-wrap', pattern: /^flex-(wrap|wrap-reverse|nowrap)$/ },
-  { name: 'justify-content', pattern: /^justify-(start|end|center|between|around|evenly|normal|stretch)$/ },
-  { name: 'justify-items', pattern: /^justify-items-(start|end|center|stretch)$/ },
-  { name: 'justify-self', pattern: /^justify-self-(auto|start|end|center|stretch)$/ },
-  { name: 'align-content', pattern: /^content-(normal|center|start|end|between|around|evenly|baseline|stretch)$/ },
-  { name: 'align-items', pattern: /^items-(start|end|center|baseline|stretch)$/ },
-  { name: 'align-self', pattern: /^self-(auto|start|end|center|stretch|baseline)$/ },
-  { name: 'gap-all', pattern: /^gap(-\d+|\/[^/]+|-[a-z0-9.]+|-\[[^\]]+\])$/ },
-  { name: 'gap-x', pattern: /^gap-x(-\d+|\/[^/]+|-[a-z0-9.]+|-\[[^\]]+\])$/ },
-  { name: 'gap-y', pattern: /^gap-y(-\d+|\/[^/]+|-[a-z0-9.]+|-\[[^\]]+\])$/ },
-  // Border Radius
-  { name: 'rounded-all', pattern: /^rounded(-none|-sm|-md|-lg|-xl|-\d+xl|-full|-\[[^\]]+\])?$/ },
-  { name: 'rounded-t', pattern: /^rounded-t(-none|-sm|-md|-lg|-xl|-\d+xl|-full|-\[[^\]]+\])?$/ },
-  { name: 'rounded-r', pattern: /^rounded-r(-none|-sm|-md|-lg|-xl|-\d+xl|-full|-\[[^\]]+\])?$/ },
-  { name: 'rounded-b', pattern: /^rounded-b(-none|-sm|-md|-lg|-xl|-\d+xl|-full|-\[[^\]]+\])?$/ },
-  { name: 'rounded-l', pattern: /^rounded-l(-none|-sm|-md|-lg|-xl|-\d+xl|-full|-\[[^\]]+\])?$/ },
-  // Opacity & Effects
-  { name: 'opacity', pattern: /^opacity-(\d+|\[[^\]]+\])$/ },
-  { name: 'shadow', pattern: /^shadow(-inner|-none|-sm|-md|-lg|-xl|-\d+xl|-\[[^\]]+\])?$/ },
-  { name: 'z-index', pattern: /^-?z-(\d+|auto|\[[^\]]+\])$/ },
-  { name: 'cursor', pattern: /^cursor-(auto|default|pointer|wait|text|move|help|not-allowed|none|context-menu|progress|cell|crosshair|vertical-text|alias|copy|no-drop|grab|grabbing|all-scroll|col-resize|row-resize|n-resize|e-resize|s-resize|w-resize|ne-resize|nw-resize|se-resize|sw-resize|ew-resize|ns-resize|nesw-resize|nwse-resize|zoom-in|zoom-out)$/ },
-  { name: 'visibility', pattern: /^(visible|invisible|collapse)$/ },
-]
-
-function parseClass(raw: string): ParsedClass {
-  let str = raw
-  let important = false
-
-  if (str.startsWith('!')) {
-    important = true
-    str = str.slice(1)
+  return {
+    raw: rawClass,
+    variants,
+    base,
+    important,
   }
-
-  // Extract variants (e.g. md:hover:dark:)
-  const lastColon = str.lastIndexOf(':')
-  let variants = ''
-  let base = str
-
-  if (lastColon !== -1) {
-    variants = str.slice(0, lastColon + 1)
-    base = str.slice(lastColon + 1)
-  }
-
-  if (base.startsWith('!')) {
-    important = true
-    base = base.slice(1)
-  }
-
-  let group: string | null = null
-  for (const cg of CONFLICT_GROUPS) {
-    if (cg.pattern.test(base)) {
-      group = cg.name
-      break
-    }
-  }
-
-  return { raw, variants, important, base, group }
 }
 
 /**
- * Resolves conflicting utility classes within the same variant scope.
- * The rightmost class wins and previous conflicting classes are removed.
+ * Maps a base Tailwind class to its CSS conflict group.
  */
-export function resolveClassConflicts(classes: string[]): { result: string[]; changes: ClassFixChange[] } {
+export function getConflictGroup(base: string): string | null {
+  // 1. Spacing - Padding
+  if (/^p-\S+$/.test(base)) return 'padding-all'
+  if (/^px-\S+$/.test(base)) return 'padding-x'
+  if (/^py-\S+$/.test(base)) return 'padding-y'
+  if (/^pt-\S+$/.test(base)) return 'padding-t'
+  if (/^pr-\S+$/.test(base)) return 'padding-r'
+  if (/^pb-\S+$/.test(base)) return 'padding-b'
+  if (/^pl-\S+$/.test(base)) return 'padding-l'
+  if (/^ps-\S+$/.test(base)) return 'padding-s'
+  if (/^pe-\S+$/.test(base)) return 'padding-e'
+
+  // 2. Spacing - Margin
+  if (/^-?m-\S+$/.test(base)) return 'margin-all'
+  if (/^-?mx-\S+$/.test(base)) return 'margin-x'
+  if (/^-?my-\S+$/.test(base)) return 'margin-y'
+  if (/^-?mt-\S+$/.test(base)) return 'margin-t'
+  if (/^-?mr-\S+$/.test(base)) return 'margin-r'
+  if (/^-?mb-\S+$/.test(base)) return 'margin-b'
+  if (/^-?ml-\S+$/.test(base)) return 'margin-l'
+  if (/^-?ms-\S+$/.test(base)) return 'margin-s'
+  if (/^-?me-\S+$/.test(base)) return 'margin-e'
+
+  // 3. Sizing
+  if (/^w-\S+$/.test(base)) return 'width'
+  if (/^min-w-\S+$/.test(base)) return 'min-width'
+  if (/^max-w-\S+$/.test(base)) return 'max-width'
+  if (/^h-\S+$/.test(base)) return 'height'
+  if (/^min-h-\S+$/.test(base)) return 'min-height'
+  if (/^max-h-\S+$/.test(base)) return 'max-height'
+  if (/^size-\S+$/.test(base)) return 'size'
+
+  // 4. Layout & Display
+  if (/^(block|inline-block|inline|flex|inline-flex|grid|inline-grid|table|table-row|table-cell|contents|flow-root|hidden)$/.test(base)) {
+    return 'display'
+  }
+  if (/^(static|fixed|absolute|relative|sticky)$/.test(base)) return 'position'
+  if (/^(visible|invisible|collapse)$/.test(base)) return 'visibility'
+
+  // 5. Flexbox & Grid
+  if (/^flex-(row|row-reverse|col|col-reverse)$/.test(base)) return 'flex-direction'
+  if (/^flex-(wrap|wrap-reverse|nowrap)$/.test(base)) return 'flex-wrap'
+  if (/^flex-(1|auto|initial|none|\[.+\])$/.test(base)) return 'flex-basis-grow-shrink'
+  if (/^grow(-\d+)?$/.test(base)) return 'flex-grow'
+  if (/^shrink(-\d+)?$/.test(base)) return 'flex-shrink'
+  if (/^items-(start|end|center|baseline|stretch)$/.test(base)) return 'align-items'
+  if (/^justify-(normal|start|end|center|between|around|evenly|stretch)$/.test(base)) return 'justify-content'
+  if (/^justify-items-(start|end|center|stretch)$/.test(base)) return 'justify-items'
+  if (/^justify-self-(auto|start|end|center|stretch)$/.test(base)) return 'justify-self'
+  if (/^self-(auto|start|end|center|stretch|baseline)$/.test(base)) return 'align-self'
+  if (/^content-(normal|start|end|center|between|around|evenly|baseline|stretch)$/.test(base)) return 'align-content'
+
+  // 6. Typography
+  if (/^text-(left|center|right|justify|start|end)$/.test(base)) return 'text-align'
+  if (/^(text-ellipsis|text-clip|truncate)$/.test(base)) return 'text-overflow'
+  if (/^text-(wrap|nowrap|balance|pretty)$/.test(base)) return 'text-wrap'
+  if (/^font-(sans|serif|mono)$/.test(base)) return 'font-family'
+  if (/^font-(thin|extralight|light|normal|medium|semibold|bold|extrabold|black)$/.test(base)) return 'font-weight'
+  if (/^leading-\S+$/.test(base)) return 'line-height'
+  if (/^tracking-\S+$/.test(base)) return 'letter-spacing'
+  if (/^(uppercase|lowercase|capitalize|normal-case)$/.test(base)) return 'text-transform'
+  if (/^(underline|overline|line-through|no-underline)$/.test(base)) return 'text-decoration'
+
+  // Font Size (text-xs, text-sm, text-base, text-lg, text-xl, text-2xl, text-[...px|rem|clamp...])
+  if (/^text-(xs|sm|base|lg|xl|\d+xl|\[(\d+|clamp|rem|em|px|vw|vh|\.).+\])$/.test(base)) {
+    return 'font-size'
+  }
+
+  // Text Color (text-white, text-black, text-red-500, text-foreground, etc.)
+  if (/^text-/.test(base)) {
+    return 'text-color'
+  }
+
+  // 7. Backgrounds & Colors
+  if (/^bg-(linear|radial|conic)-to-\S+$/.test(base) || /^bg-gradient-to-\S+$/.test(base)) return 'bg-gradient-direction'
+  if (/^bg-/.test(base)) return 'bg-color'
+
+  // 8. Borders & Outline
+  if (/^rounded(-\S+)?$/.test(base)) return 'border-radius'
+  if (/^border-(solid|dashed|dotted|double|hidden|none)$/.test(base)) return 'border-style'
+  if (/^border-(\d+|\[\S+\])$/.test(base) || base === 'border') return 'border-width'
+  if (/^border-/.test(base)) return 'border-color'
+  if (/^outline-none|outline|outline-\S+$/.test(base)) return 'outline'
+  if (/^ring(-\S+)?$/.test(base)) return 'ring'
+
+  // 9. Effects & Interactivity
+  if (/^opacity-\S+$/.test(base)) return 'opacity'
+  if (/^shadow(-\S+)?$/.test(base)) return 'box-shadow'
+  if (/^cursor-\S+$/.test(base)) return 'cursor'
+  if (/^select-(none|text|all|auto)$/.test(base)) return 'user-select'
+  if (/^pointer-events-(none|auto)$/.test(base)) return 'pointer-events'
+  if (/^z-\S+$/.test(base)) return 'z-index'
+  if (/^overflow-(auto|hidden|clip|visible|scroll|x-auto|x-hidden|x-clip|x-visible|x-scroll|y-auto|y-hidden|y-clip|y-visible|y-scroll)$/.test(base)) {
+    return 'overflow'
+  }
+
+  return null
+}
+
+/**
+ * Resolves conflicting Tailwind classes.
+ * Follows rightmost-wins semantics (the last occurrence overrides previous conflicting ones).
+ */
+export function resolveConflicts(classes: string[]): {
+  result: string[]
+  changes: ClassFixChange[]
+} {
+  const seen = new Map<string, number>()
   const parsed = classes.map(parseClass)
   const changes: ClassFixChange[] = []
-  const toRemoveIndices = new Set<number>()
+  const toRemove = new Set<number>()
 
-  // Map of `variants + important + group` to index of latest occurrence
-  const latestGroupIndex = new Map<string, number>()
-
-  // Traverse from right to left to keep the last occurrence
+  // Scan backwards to find the winning (rightmost) class for each conflict group
   for (let i = parsed.length - 1; i >= 0; i--) {
     const item = parsed[i]
-    if (!item.group) continue
+    const group = getConflictGroup(item.base)
 
-    const key = `${item.variants}__${item.important}__${item.group}`
+    if (!group) continue
 
-    if (latestGroupIndex.has(key)) {
-      // An earlier (more left) item conflicts with a later (more right) item
-      toRemoveIndices.add(i)
-      const winningIndex = latestGroupIndex.get(key)!
+    // The key combines the variant scope and conflict group (e.g. "hover:bg-color")
+    const key = `${item.variants}::${group}`
+
+    if (seen.has(key)) {
+      toRemove.add(i)
+      const winningIdx = seen.get(key)!
+      const winningClass = classes[winningIdx]
       changes.push({
         type: 'conflict',
         original: item.raw,
-        replacement: null,
-        reason: `Removed '${item.raw}' because it conflicts with '${parsed[winningIndex].raw}'`,
+        reason: `Removed '${item.raw}' because it conflicts with '${winningClass}'`,
       })
     } else {
-      latestGroupIndex.set(key, i)
+      seen.set(key, i)
     }
   }
 
-  const result = classes.filter((_, idx) => !toRemoveIndices.has(idx))
+  const result = classes.filter((_, i) => !toRemove.has(i))
   return { result, changes }
 }

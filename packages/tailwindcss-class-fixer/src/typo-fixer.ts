@@ -28,56 +28,137 @@ export function levenshteinDistance(a: string, b: string): number {
   return matrix[b.length][a.length]
 }
 
-const COMMON_TAILWIND_UTILITIES = [
-  'flex', 'grid', 'block', 'inline-block', 'inline', 'hidden',
-  'absolute', 'relative', 'fixed', 'sticky',
-  'w-full', 'w-screen', 'w-auto', 'w-fit', 'h-full', 'h-screen', 'h-auto', 'h-fit',
-  'text-center', 'text-left', 'text-right', 'text-justify',
-  'text-white', 'text-black', 'text-transparent',
-  'bg-white', 'bg-black', 'bg-transparent',
-  'font-bold', 'font-semibold', 'font-medium', 'font-normal', 'font-light',
-  'rounded', 'rounded-md', 'rounded-lg', 'rounded-full', 'rounded-sm', 'rounded-xl', 'rounded-2xl',
-  'shadow', 'shadow-sm', 'shadow-md', 'shadow-lg', 'shadow-xl', 'shadow-none',
-  'cursor-pointer', 'cursor-not-allowed', 'cursor-default',
-  'items-center', 'items-start', 'items-end',
-  'justify-center', 'justify-between', 'justify-start', 'justify-end',
-  'flex-col', 'flex-row', 'flex-wrap',
-  'truncate', 'text-ellipsis', 'grow', 'grow-0', 'shrink', 'shrink-0',
+const COMMON_TAILWIND_UTILITIES = new Set([
+  // Layout & Display
+  'container', 'block', 'inline-block', 'inline', 'flex', 'inline-flex', 'grid', 'inline-grid',
+  'table', 'table-caption', 'table-cell', 'table-column', 'table-row', 'contents', 'flow-root',
+  'hidden', 'visible', 'invisible', 'collapse',
+  // Position
+  'static', 'fixed', 'absolute', 'relative', 'sticky',
+  'isolate', 'isolation-auto',
+  // Flex & Grid
+  'flex-1', 'flex-auto', 'flex-initial', 'flex-none',
+  'flex-row', 'flex-row-reverse', 'flex-col', 'flex-col-reverse',
+  'flex-wrap', 'flex-wrap-reverse', 'flex-nowrap',
+  'items-center', 'items-start', 'items-end', 'items-baseline', 'items-stretch',
+  'justify-normal', 'justify-start', 'justify-end', 'justify-center', 'justify-between', 'justify-around', 'justify-evenly', 'justify-stretch',
+  'justify-items-start', 'justify-items-end', 'justify-items-center', 'justify-items-stretch',
+  'justify-self-auto', 'justify-self-start', 'justify-self-end', 'justify-self-center', 'justify-self-stretch',
+  'content-normal', 'content-start', 'content-end', 'content-center', 'content-between', 'content-around', 'content-evenly', 'content-baseline', 'content-stretch',
+  'self-auto', 'self-start', 'self-end', 'self-center', 'self-stretch', 'self-baseline',
+  'grow', 'grow-0', 'shrink', 'shrink-0',
+  // Typography
+  'text-center', 'text-left', 'text-right', 'text-justify', 'text-start', 'text-end',
+  'text-ellipsis', 'text-clip', 'truncate',
+  'text-wrap', 'text-nowrap', 'text-balance', 'text-pretty',
+  'uppercase', 'lowercase', 'capitalize', 'normal-case',
+  'italic', 'not-italic', 'underline', 'overline', 'line-through', 'no-underline',
+  'font-thin', 'font-extralight', 'font-light', 'font-normal', 'font-medium', 'font-semibold', 'font-bold', 'font-extrabold', 'font-black',
+  'font-sans', 'font-serif', 'font-mono',
+  // Sizing & Spacing keywords
+  'w-full', 'w-screen', 'w-auto', 'w-fit', 'w-min', 'w-max',
+  'h-full', 'h-screen', 'h-auto', 'h-fit', 'h-min', 'h-max',
+  'min-w-0', 'min-w-full', 'min-w-min', 'min-w-max', 'min-w-fit',
+  'min-h-0', 'min-h-full', 'min-h-screen', 'min-h-min', 'min-h-max', 'min-h-fit',
+  'max-w-none', 'max-w-full', 'max-w-min', 'max-w-max', 'max-w-fit', 'max-w-prose',
+  // Colors & Backgrounds
+  'text-white', 'text-black', 'text-transparent', 'text-current', 'text-inherit',
+  'bg-white', 'bg-black', 'bg-transparent', 'bg-current', 'bg-inherit',
+  'border-transparent', 'border-current', 'border-white', 'border-black',
+  'outline-none', 'outline-transparent',
+  // Shapes & Borders
+  'rounded', 'rounded-none', 'rounded-sm', 'rounded-md', 'rounded-lg', 'rounded-xl', 'rounded-2xl', 'rounded-3xl', 'rounded-full',
+  'border', 'border-0', 'border-2', 'border-4', 'border-8',
+  'border-solid', 'border-dashed', 'border-dotted', 'border-double', 'border-none',
+  // Effects & Interactivity
+  'shadow', 'shadow-none', 'shadow-sm', 'shadow-md', 'shadow-lg', 'shadow-xl', 'shadow-2xl', 'shadow-inner',
+  'opacity-0', 'opacity-5', 'opacity-10', 'opacity-20', 'opacity-25', 'opacity-30', 'opacity-40', 'opacity-50', 'opacity-60', 'opacity-70', 'opacity-75', 'opacity-80', 'opacity-90', 'opacity-95', 'opacity-100',
+  'cursor-auto', 'cursor-default', 'cursor-pointer', 'cursor-wait', 'cursor-text', 'cursor-move', 'cursor-help', 'cursor-not-allowed', 'cursor-none',
+  'select-none', 'select-text', 'select-all', 'select-auto',
+  'pointer-events-none', 'pointer-events-auto',
+  'transition', 'transition-all', 'transition-colors', 'transition-opacity', 'transition-shadow', 'transition-transform', 'transition-none',
+  'sr-only', 'not-sr-only',
+  'group', 'peer',
+])
+
+// Prefix patterns that are valid Tailwind utilities
+const VALID_PREFIX_PATTERNS = [
+  // Sizing & Spacing
+  /^-?(p|px|py|pt|pb|pl|pr|m|mx|my|mt|mb|ml|mr|w|h|min-w|min-h|max-w|max-h|size|gap|gap-x|gap-y|space-x|space-y|top|bottom|left|right|start|end|inset|inset-x|inset-y)-/,
+  // Grid & Flex
+  /^(grid-cols|grid-rows|col-span|row-span|col-start|col-end|row-start|row-end|basis|order|auto-cols|auto-rows)-/,
+  // Typography
+  /^(text|font|leading|tracking|line-clamp|indent|decoration|underline-offset)-/,
+  // Colors & Gradients
+  /^(bg|text|border|outline|ring|ring-offset|divide|fill|stroke|accent|caret|from|via|to|bg-gradient|bg-linear|bg-radial|bg-conic)-/,
+  // Effects & Filters
+  /^(shadow|opacity|z|blur|brightness|contrast|drop-shadow|grayscale|hue-rotate|invert|saturate|sepia|backdrop-blur|backdrop-brightness|backdrop-contrast|backdrop-grayscale|backdrop-invert|backdrop-opacity|backdrop-saturate|backdrop-sepia)-/,
+  // Transitions & Transforms
+  /^(duration|ease|delay|animate|scale|scale-x|scale-y|rotate|translate-x|translate-y|skew-x|skew-y|origin)-/,
+  // Borders & Rounded
+  /^(rounded|rounded-t|rounded-r|rounded-b|rounded-l|rounded-tl|rounded-tr|rounded-br|rounded-bl|rounded-s|rounded-e)-/,
+  // Arbitrary variants & properties
+  /^\[.+\]$/,
+  /^aria-/,
+  /^data-/,
 ]
 
-// Common valid pattern prefix check
-const VALID_PREFIX_PATTERN = /^(p|px|py|pt|pb|pl|pr|m|mx|my|mt|mb|ml|mr|w|h|min-w|min-h|max-w|max-h|gap|gap-x|gap-y|top|bottom|left|right|z|opacity|order|col|row|inset)-(\d+|\[[^\]]+\]|\d+\/\d+|auto|full|screen|px|fit)$/
+function isValidTailwindUtility(base: string): boolean {
+  if (COMMON_TAILWIND_UTILITIES.has(base)) {
+    return true
+  }
 
+  // Any arbitrary value or modifier syntax (e.g. bg-[#fff], max-[520px]:..., size-2.5, /50)
+  if (base.includes('[') || base.includes(']') || base.includes('/') || base.includes('(')) {
+    return true
+  }
+
+  for (const pattern of VALID_PREFIX_PATTERNS) {
+    if (pattern.test(base)) {
+      return true
+    }
+  }
+
+  return false
+}
 
 /**
  * Finds closest matching valid utility for a suspected typo.
  */
 export function suggestTypoFix(
   className: string,
-  dictionary: string[] = COMMON_TAILWIND_UTILITIES,
+  dictionary?: string[],
 ): string | null {
   const lastColon = className.lastIndexOf(':')
   const variants = lastColon !== -1 ? className.slice(0, lastColon + 1) : ''
-  const base = lastColon !== -1 ? className.slice(lastColon + 1) : className
+  let base = lastColon !== -1 ? className.slice(lastColon + 1) : className
+  const important = base.startsWith('!') || base.endsWith('!') ? '!' : ''
+  base = base.replace(/!/g, '')
+
+  // If already a valid Tailwind class, don't touch it
+  if (isValidTailwindUtility(base)) {
+    return null
+  }
+
+  const dict = dictionary ? new Set(dictionary) : COMMON_TAILWIND_UTILITIES
 
   let bestMatch: string | null = null
   let minDistance = 3 // Max threshold
 
-  // Exact match or valid pattern means no typo
-  if (dictionary.includes(base) || VALID_PREFIX_PATTERN.test(base)) return null
-
-  for (const candidate of dictionary) {
+  for (const candidate of dict) {
     const dist = levenshteinDistance(base, candidate)
     if (dist > 0 && dist <= 2 && dist < minDistance) {
       // Avoid matching completely different short words (e.g. 'pt-1' vs 'pl-1')
       if (base.length <= 3 && dist > 1) continue
+      // Don't match words of very different lengths
+      if (Math.abs(base.length - candidate.length) > 2) continue
       minDistance = dist
       bestMatch = candidate
     }
   }
 
   if (bestMatch) {
-    return `${variants}${bestMatch}`
+    return `${variants}${important}${bestMatch}`
   }
 
   return null
