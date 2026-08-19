@@ -95,13 +95,25 @@ export function getConflictGroup(base: string): string | null {
   if (/^bg-(linear|radial|conic)-to-\S+$/.test(base) || /^bg-gradient-to-\S+$/.test(base)) return 'bg-gradient-direction'
   if (/^bg-/.test(base)) return 'bg-color'
 
-  // 8. Borders & Outline
+  // 8. Borders, Outline & Ring
   if (/^rounded(-\S+)?$/.test(base)) return 'border-radius'
   if (/^border-(solid|dashed|dotted|double|hidden|none)$/.test(base)) return 'border-style'
-  if (/^border-(\d+|\[\S+\])$/.test(base) || base === 'border') return 'border-width'
+  if (/^border-(\d+|\[\d+\w*\])$/.test(base) || base === 'border') return 'border-width'
   if (/^border-/.test(base)) return 'border-color'
-  if (/^outline-none|outline|outline-\S+$/.test(base)) return 'outline'
-  if (/^ring(-\S+)?$/.test(base)) return 'ring'
+
+  // Outline
+  if (base === 'outline-none') return 'outline-style'
+  if (/^outline-(solid|dashed|dotted|double)$/.test(base)) return 'outline-style'
+  if (/^outline-(\d+|\[\d+\w*\])$/.test(base) || base === 'outline') return 'outline-width'
+  if (/^outline-offset-\S+$/.test(base)) return 'outline-offset'
+  if (/^outline-/.test(base)) return 'outline-color'
+
+  // Ring
+  if (base === 'ring-inset') return 'ring-inset'
+  if (/^ring-offset-\d+|ring-offset-\[\S+\]$/.test(base)) return 'ring-offset-width'
+  if (/^ring-offset-/.test(base)) return 'ring-offset-color'
+  if (/^ring-(\d+|\[\d+\w*\])$/.test(base) || base === 'ring') return 'ring-width'
+  if (/^ring-/.test(base)) return 'ring-color'
 
   // 9. Effects & Interactivity
   if (/^opacity-\S+$/.test(base)) return 'opacity'
@@ -157,3 +169,5 @@ export function resolveConflicts(classes: string[]): {
   const result = classes.filter((_, i) => !toRemove.has(i))
   return { result, changes }
 }
+
+export const resolveClassConflicts = resolveConflicts

@@ -13,9 +13,17 @@ export type ChangeType = 'dedupe' | 'conflict' | 'migration' | 'typo' | 'sort'
 export interface ClassFixChange {
   type: ChangeType
   original: string
-  replacement: string | null
+  replacement?: string | null
   reason: string
 }
+
+export interface ParsedClass {
+  raw: string
+  variants: string
+  base: string
+  important: boolean
+}
+
 
 export interface ClassFixResult {
   original: string
