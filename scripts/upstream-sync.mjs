@@ -16,24 +16,23 @@ async function main() {
   // Fetch upstream tags and main branch
   run('git fetch upstream main --tags')
 
-  const latestUpstreamTag = run('git describe --tags --abbrev=0 upstream/main') || 'v0.16.0'
-  const currentTag = run('git describe --tags --abbrev=0') || 'v0.0.0'
+  const behindCountStr = run('git rev-list --count HEAD..upstream/main') || '0'
+  const behindCount = parseInt(behindCountStr, 10)
 
-  console.log(`Current local tag: ${currentTag}`)
-  console.log(`Latest upstream tag: ${latestUpstreamTag}`)
+  console.log(`Commits behind upstream/main: ${behindCount}`)
 
-  if (latestUpstreamTag !== currentTag) {
-    console.log(`New upstream version detected: ${latestUpstreamTag}. Re-basing upstream changes...`)
+  if (behindCount > 0) {
+    console.log(`New upstream changes detected (${behindCount} commits). Merging upstream changes...`)
     
-    // Attempt merge/rebase
-    const mergeOutput = run('git merge upstream/main -m "chore(upstream): sync with ' + latestUpstreamTag + '"')
+    // Attempt merge
+    const mergeOutput = run('git merge upstream/main -m "chore(upstream): sync latest changes from upstream"')
     console.log(mergeOutput)
 
     if (process.env.GITHUB_OUTPUT) {
-      fs.appendFileSync(process.env.GITHUB_OUTPUT, `has_updates=true\nnew_version=${latestUpstreamTag}\n`)
+      fs.appendFileSync(process.env.GITHUB_OUTPUT, `has_updates=true\n`)
     }
   } else {
-    console.log('Already up-to-date with upstream.')
+    console.log('Already up-to-date with upstream/main.')
     if (process.env.GITHUB_OUTPUT) {
       fs.appendFileSync(process.env.GITHUB_OUTPUT, `has_updates=false\n`)
     }
