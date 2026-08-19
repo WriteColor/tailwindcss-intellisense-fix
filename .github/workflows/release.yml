@@ -77,9 +77,10 @@ jobs:
           files: |
             release-artifacts/*.vsix
             release-artifacts/SHA256SUMS.txt
-          generate_release_notes: true
+          body_path: CHANGELOG.md
           draft: false
           prerelease: false
+
 
       - name: Optional Publish to Open VSX & VS Code Marketplace
         if: env.VSCODE_TOKEN != '' || env.OVSX_TOKEN != ''

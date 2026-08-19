@@ -9,6 +9,8 @@ import type {
 import { dedupeClasses } from './dedupe'
 import { resolveClassConflicts } from './conflicts'
 import { migrateClasses } from './migrations'
+import { canonicalizeValues } from './canonical-values'
+
 import { sortClasses } from './sorter'
 import { fixTypos } from './typo-fixer'
 import { extractClassRanges } from './universal-parser'
@@ -17,9 +19,11 @@ export * from './types'
 export * from './dedupe'
 export * from './conflicts'
 export * from './migrations'
+export * from './canonical-values'
 export * from './sorter'
 export * from './typo-fixer'
 export * from './universal-parser'
+
 
 const DEFAULT_OPTIONS: ClassFixOptions = {
   dedupe: true,
@@ -58,12 +62,17 @@ export function fixClassString(
     }
   }
 
-  // 1. Migrations (e.g. deprecated utilities to modern v3/v4)
+  // 1. Migrations & Canonical Values (e.g. deprecated utilities to modern v3/v4 & canonical numeric scales)
   if (options.migrateVersion) {
     const migResult = migrateClasses(classes, options.migrateVersion)
     classes = migResult.result
     changes.push(...migResult.changes)
+
+    const canonResult = canonicalizeValues(classes)
+    classes = canonResult.result
+    changes.push(...canonResult.changes)
   }
+
 
   // 2. Deduplication
   if (options.dedupe) {
