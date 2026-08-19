@@ -1,10 +1,13 @@
-# Tailwind CSS IntelliSense (Fork con Auto-Fixer Inteligente y Soporte Universal)
-
 <div align="center">
+
+  <img src="icon.png" alt="Tailwind CSS IntelliSense Fix Icon" width="128" />
+
+  # Tailwind CSS IntelliSense (Fork con Auto-Fixer Inteligente y Soporte Universal)
 
   **Idioma / Language:** [🇪🇸 Español](README.es.md) • [🇺🇸 English](README.md)
 
 </div>
+
 
 [![CI Test Matrix](https://github.com/WriteColor/tailwindcss-intellisense-fix/actions/workflows/ci.yml/badge.svg)](https://github.com/WriteColor/tailwindcss-intellisense-fix/actions/workflows/ci.yml)
 
