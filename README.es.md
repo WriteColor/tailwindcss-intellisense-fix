@@ -1,6 +1,13 @@
 # Tailwind CSS IntelliSense (Fork con Auto-Fixer Inteligente y Soporte Universal)
 
+<div align="center">
+
+  **Idioma / Language:** [🇪🇸 Español](README.es.md) • [🇺🇸 English](README.md)
+
+</div>
+
 [![CI Test Matrix](https://github.com/WriteColor/tailwindcss-intellisense-fix/actions/workflows/ci.yml/badge.svg)](https://github.com/WriteColor/tailwindcss-intellisense-fix/actions/workflows/ci.yml)
+
 [![Upstream Sync](https://github.com/WriteColor/tailwindcss-intellisense-fix/actions/workflows/upstream-sync.yml/badge.svg)](https://github.com/WriteColor/tailwindcss-intellisense-fix/actions/workflows/upstream-sync.yml)
 [![Licencia: MIT](https://img.shields.io/badge/Licencia-MIT-blue.svg)](LICENSE)
 [![pnpm](https://img.shields.io/badge/mantenido%20con-pnpm-f69220.svg)](https://pnpm.io/)
