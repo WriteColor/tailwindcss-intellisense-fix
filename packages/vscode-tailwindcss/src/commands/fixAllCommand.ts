@@ -9,26 +9,28 @@ export async function fixCurrentFileCommand(): Promise<void> {
   }
 
   const doc = editor.document
-  const config = Workspace.getConfiguration('tailwindCSS.autoFix', doc.uri)
-  const isEnabled = config.get<boolean>('enable', true)
+  const fixConfig = Workspace.getConfiguration('tailwindFix.autoFix', doc.uri)
+  const legacyConfig = Workspace.getConfiguration('tailwindCSS.autoFix', doc.uri)
+  const isEnabled = fixConfig.get<boolean>('enable', legacyConfig.get<boolean>('enable', true))
 
   if (!isEnabled) {
     Window.showWarningMessage('Tailwind autoFix is disabled in settings.')
     return
   }
 
-  const migSetting = config.get<string>('migrateVersion', 'v4')
+  const migSetting = fixConfig.get<string>('migrateVersion', legacyConfig.get<string>('migrateVersion', 'v4'))
   const migrateVersion: 'v3' | 'v4' | false =
     migSetting === 'v3' || migSetting === 'v4' ? migSetting : false
 
   const options = {
     fileName: doc.fileName,
-    dedupe: config.get<boolean>('dedupe', true),
-    resolveConflicts: config.get<boolean>('resolveConflicts', true),
-    sort: config.get<boolean>('sort', true),
+    dedupe: fixConfig.get<boolean>('dedupe', legacyConfig.get<boolean>('dedupe', true)),
+    resolveConflicts: fixConfig.get<boolean>('resolveConflicts', legacyConfig.get<boolean>('resolveConflicts', true)),
+    sort: fixConfig.get<boolean>('sort', legacyConfig.get<boolean>('sort', true)),
     migrateVersion,
-    fixTypos: config.get<boolean>('fixTypos', true),
+    fixTypos: fixConfig.get<boolean>('fixTypos', legacyConfig.get<boolean>('fixTypos', true)),
   }
+
 
 
   const text = doc.getText()

@@ -67,19 +67,21 @@ export async function fixWorkspaceCommand(): Promise<void> {
 
         try {
           const doc = await Workspace.openTextDocument(fileUri)
-          const config = Workspace.getConfiguration('tailwindCSS.autoFix', fileUri)
+          const folder = Workspace.getWorkspaceFolder(fileUri)
+          const fixConfig = Workspace.getConfiguration('tailwindFix.autoFix', fileUri)
+          const legacyConfig = Workspace.getConfiguration('tailwindCSS.autoFix', fileUri)
 
-          const migSetting = config.get<string>('migrateVersion', 'v4')
+          const migSetting = fixConfig.get<string>('migrateVersion', legacyConfig.get<string>('migrateVersion', 'v4'))
           const migrateVersion: 'v3' | 'v4' | false =
             migSetting === 'v3' || migSetting === 'v4' ? migSetting : false
 
           const options = {
             fileName: fileUri.fsPath,
-            dedupe: config.get<boolean>('dedupe', true),
-            resolveConflicts: config.get<boolean>('resolveConflicts', true),
-            sort: config.get<boolean>('sort', true),
+            dedupe: fixConfig.get<boolean>('dedupe', legacyConfig.get<boolean>('dedupe', true)),
+            resolveConflicts: fixConfig.get<boolean>('resolveConflicts', legacyConfig.get<boolean>('resolveConflicts', true)),
+            sort: fixConfig.get<boolean>('sort', legacyConfig.get<boolean>('sort', true)),
             migrateVersion,
-            fixTypos: config.get<boolean>('fixTypos', true),
+            fixTypos: fixConfig.get<boolean>('fixTypos', legacyConfig.get<boolean>('fixTypos', true)),
           }
 
 

@@ -61,22 +61,22 @@
     ],
     "commands": [
       {
-        "command": "tailwindCSS.showOutput",
+        "command": "tailwindFix.showOutput",
         "title": "Tailwind CSS: Show Output",
-        "enablement": "tailwindCSS.hasOutputChannel"
+        "enablement": "tailwindFix.hasOutputChannel"
       },
       {
-        "command": "tailwindCSS.sortSelection",
+        "command": "tailwindFix.sortSelection",
         "title": "Tailwind CSS: Sort Selection",
         "enablement": "editorHasSelection && (resourceScheme == file || resourceScheme == vscode-remote) && tailwindCSS.activeTextEditorSupportsClassSorting"
       },
       {
-        "command": "tailwindCSS.fixAll",
+        "command": "tailwindFix.fixAll",
         "title": "Tailwind CSS: Fix, Optimize & Sort Classes in Current File",
         "enablement": "(resourceScheme == file || resourceScheme == vscode-remote)"
       },
       {
-        "command": "tailwindCSS.fixWorkspace",
+        "command": "tailwindFix.fixWorkspace",
         "title": "Tailwind CSS: Fix All Tailwind Issues in Entire Workspace",
         "enablement": "(resourceScheme == file || resourceScheme == vscode-remote)"
       }
@@ -160,43 +160,43 @@
       "title": "Tailwind CSS IntelliSense Fix & Auto-Optimizer",
       "properties": {
 
-        "tailwindCSS.autoFix.enable": {
+        "tailwindFix.autoFix.enable": {
           "type": "boolean",
           "default": true,
           "markdownDescription": "Enable automatic class deduplication, conflict resolution, migration and canonical sorting."
         },
-        "tailwindCSS.autoFix.dedupe": {
+        "tailwindFix.autoFix.dedupe": {
           "type": "boolean",
           "default": true,
           "markdownDescription": "Automatically deduplicate identical Tailwind CSS classes."
         },
-        "tailwindCSS.autoFix.resolveConflicts": {
+        "tailwindFix.autoFix.resolveConflicts": {
           "type": "boolean",
           "default": true,
           "markdownDescription": "Automatically resolve conflicting utility classes on the same element."
         },
-        "tailwindCSS.autoFix.sort": {
+        "tailwindFix.autoFix.sort": {
           "type": "boolean",
           "default": true,
           "markdownDescription": "Automatically sort classes in canonical order matching official Tailwind recommendations."
         },
-        "tailwindCSS.autoFix.migrateVersion": {
+        "tailwindFix.autoFix.migrateVersion": {
           "type": "string",
           "enum": ["v4", "v3", "off"],
           "default": "v4",
           "markdownDescription": "Automatically migrate deprecated Tailwind utility classes to target version."
         },
-        "tailwindCSS.autoFix.fixTypos": {
+        "tailwindFix.autoFix.fixTypos": {
           "type": "boolean",
           "default": true,
           "markdownDescription": "Automatically correct common typographical errors in Tailwind class names."
         },
-        "tailwindCSS.emmetCompletions": {
+        "tailwindFix.emmetCompletions": {
           "type": "boolean",
           "default": false,
           "markdownDescription": "Enable class name completions when using Emmet-style syntax, for example `div.bg-red-500.uppercase`"
         },
-        "tailwindCSS.includeLanguages": {
+        "tailwindFix.includeLanguages": {
           "type": "object",
           "additionalProperties": {
             "type": "string"
@@ -204,7 +204,7 @@
           "default": {},
           "markdownDescription": "Enable features in languages that are not supported by default. Add a mapping here between the new language and an already supported language.\n E.g.: `{\"plaintext\": \"html\"}`"
         },
-        "tailwindCSS.files.exclude": {
+        "tailwindFix.files.exclude": {
           "type": "array",
           "items": {
             "type": "string"
@@ -217,7 +217,7 @@
           ],
           "markdownDescription": "Configure glob patterns to exclude from all IntelliSense features. Inherits all glob patterns from the `#files.exclude#` setting."
         },
-        "tailwindCSS.classAttributes": {
+        "tailwindFix.classAttributes": {
           "type": "array",
           "items": {
             "type": "string"
@@ -230,7 +230,7 @@
           ],
           "markdownDescription": "The HTML attributes for which to provide class completions, hover previews, linting etc."
         },
-        "tailwindCSS.classFunctions": {
+        "tailwindFix.classFunctions": {
           "type": "array",
           "items": {
             "type": "string"
@@ -238,43 +238,43 @@
           "default": [],
           "markdownDescription": "The function or tagged template literal names for which to provide class completions, hover previews, linting etc."
         },
-        "tailwindCSS.suggestions": {
+        "tailwindFix.suggestions": {
           "type": "boolean",
           "default": true,
           "markdownDescription": "Enable autocomplete suggestions.",
           "scope": "language-overridable"
         },
-        "tailwindCSS.hovers": {
+        "tailwindFix.hovers": {
           "type": "boolean",
           "default": true,
           "markdownDescription": "Enable hovers.",
           "scope": "language-overridable"
         },
-        "tailwindCSS.codeActions": {
+        "tailwindFix.codeActions": {
           "type": "boolean",
           "default": true,
           "markdownDescription": "Enable code actions.",
           "scope": "language-overridable"
         },
-        "tailwindCSS.codeLens": {
+        "tailwindFix.codeLens": {
           "type": "boolean",
           "default": true,
           "markdownDescription": "Enable code lens.",
           "scope": "language-overridable"
         },
-        "tailwindCSS.colorDecorators": {
+        "tailwindFix.colorDecorators": {
           "type": "boolean",
           "default": true,
           "markdownDescription": "Controls whether the editor should render inline color decorators for Tailwind CSS classes and helper functions.",
           "scope": "language-overridable"
         },
-        "tailwindCSS.validate": {
+        "tailwindFix.validate": {
           "type": "boolean",
           "default": true,
           "markdownDescription": "Enable linting. Rules can be configured individually using the `tailwindcss.lint.*` settings",
           "scope": "language-overridable"
         },
-        "tailwindCSS.lint.cssConflict": {
+        "tailwindFix.lint.cssConflict": {
           "type": "string",
           "enum": [
             "ignore",
@@ -285,7 +285,7 @@
           "markdownDescription": "Class names on the same HTML element which apply the same CSS property or properties",
           "scope": "language-overridable"
         },
-        "tailwindCSS.lint.invalidApply": {
+        "tailwindFix.lint.invalidApply": {
           "type": "string",
           "enum": [
             "ignore",
@@ -296,7 +296,7 @@
           "markdownDescription": "Unsupported use of the [`@apply` directive](https://tailwindcss.com/docs/functions-and-directives/#apply)",
           "scope": "language-overridable"
         },
-        "tailwindCSS.lint.invalidScreen": {
+        "tailwindFix.lint.invalidScreen": {
           "type": "string",
           "enum": [
             "ignore",
@@ -307,7 +307,7 @@
           "markdownDescription": "Unknown screen name used with the [`@screen` directive](https://tailwindcss.com/docs/functions-and-directives/#screen)",
           "scope": "language-overridable"
         },
-        "tailwindCSS.lint.invalidVariant": {
+        "tailwindFix.lint.invalidVariant": {
           "type": "string",
           "enum": [
             "ignore",
@@ -318,7 +318,7 @@
           "markdownDescription": "Unknown variant name used with the [`@variants` directive](https://tailwindcss.com/docs/functions-and-directives/#variants)",
           "scope": "language-overridable"
         },
-        "tailwindCSS.lint.deprecatedAtRule": {
+        "tailwindFix.lint.deprecatedAtRule": {
           "type": "string",
           "enum": [
             "ignore",
@@ -329,7 +329,7 @@
           "markdownDescription": "Deprecated Tailwind CSS at-rules",
           "scope": "language-overridable"
         },
-        "tailwindCSS.lint.invalidConfigPath": {
+        "tailwindFix.lint.invalidConfigPath": {
           "type": "string",
           "enum": [
             "ignore",
@@ -340,7 +340,7 @@
           "markdownDescription": "Unknown or invalid path used with the [`theme` helper](https://tailwindcss.com/docs/functions-and-directives/#theme)",
           "scope": "language-overridable"
         },
-        "tailwindCSS.lint.invalidTailwindDirective": {
+        "tailwindFix.lint.invalidTailwindDirective": {
           "type": "string",
           "enum": [
             "ignore",
@@ -351,7 +351,7 @@
           "markdownDescription": "Unknown value used with the [`@tailwind` directive](https://tailwindcss.com/docs/functions-and-directives/#tailwind)",
           "scope": "language-overridable"
         },
-        "tailwindCSS.lint.recommendedVariantOrder": {
+        "tailwindFix.lint.recommendedVariantOrder": {
           "type": "string",
           "enum": [
             "ignore",
@@ -362,7 +362,7 @@
           "markdownDescription": "Class variants not in the recommended order (applies in [JIT mode](https://tailwindcss.com/docs/just-in-time-mode) only)",
           "scope": "language-overridable"
         },
-        "tailwindCSS.lint.usedBlocklistedClass": {
+        "tailwindFix.lint.usedBlocklistedClass": {
           "type": "string",
           "enum": [
             "ignore",
@@ -373,7 +373,7 @@
           "markdownDescription": "Usage of class names that have been blocklisted via `@source not inline(…)`",
           "scope": "language-overridable"
         },
-        "tailwindCSS.lint.suggestCanonicalClasses": {
+        "tailwindFix.lint.suggestCanonicalClasses": {
           "type": "string",
           "enum": [
             "ignore",
@@ -384,11 +384,11 @@
           "markdownDescription": "Indicate when utilities may be written in a more optimal form",
           "scope": "language-overridable"
         },
-        "tailwindCSS.experimental.classRegex": {
+        "tailwindFix.experimental.classRegex": {
           "type": "array",
           "scope": "language-overridable"
         },
-        "tailwindCSS.experimental.configFile": {
+        "tailwindFix.experimental.configFile": {
           "type": [
             "null",
             "string",
@@ -397,17 +397,17 @@
           "default": null,
           "markdownDescription": "Manually specify the Tailwind config file or files that should be read to provide IntelliSense features. Can either be a single string value, or an object where each key is a config file path and each value is a glob or array of globs representing the set of files that the config file applies to."
         },
-        "tailwindCSS.showPixelEquivalents": {
+        "tailwindFix.showPixelEquivalents": {
           "type": "boolean",
           "default": true,
           "markdownDescription": "Show `px` equivalents for `rem` CSS values."
         },
-        "tailwindCSS.rootFontSize": {
+        "tailwindFix.rootFontSize": {
           "type": "number",
           "default": 16,
           "markdownDescription": "Root font size in pixels. Used to convert `rem` CSS values to their `px` equivalents. See `#tailwindCSS.showPixelEquivalents#`."
         },
-        "tailwindCSS.inspectPort": {
+        "tailwindFix.inspectPort": {
           "type": [
             "number",
             "null"
@@ -415,7 +415,7 @@
           "default": null,
           "markdownDescription": "Enable the Node.js inspector agent for the language server and listen on the specified port."
         },
-        "tailwindcss-intellisense.trace.server": {
+        "tailwindFix.trace.server": {
           "scope": "window",
           "type": "string",
           "enum": [

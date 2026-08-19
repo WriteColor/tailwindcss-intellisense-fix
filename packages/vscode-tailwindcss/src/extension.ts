@@ -108,15 +108,20 @@ async function activeTextEditorSupportsClassSorting(): Promise<boolean> {
 }
 
 async function updateActiveTextEditorContext(): Promise<void> {
-  commands.executeCommand(
-    'setContext',
-    'tailwindCSS.activeTextEditorSupportsClassSorting',
-    await activeTextEditorSupportsClassSorting(),
-  )
+  const supports = await activeTextEditorSupportsClassSorting()
+  commands.executeCommand('setContext', 'tailwindFix.activeTextEditorSupportsClassSorting', supports)
 }
 
 function resetActiveTextEditorContext(): void {
-  commands.executeCommand('setContext', 'tailwindCSS.activeTextEditorSupportsClassSorting', false)
+  commands.executeCommand('setContext', 'tailwindFix.activeTextEditorSupportsClassSorting', false)
+}
+
+function safeRegisterCommand(id: string, callback: (...args: any[]) => any) {
+  try {
+    return commands.registerCommand(id, callback)
+  } catch {
+    return { dispose: () => {} }
+  }
 }
 
 export async function activate(context: ExtensionContext) {
@@ -128,15 +133,14 @@ export async function activate(context: ExtensionContext) {
   })
 
   context.subscriptions.push(outputChannel)
-  context.subscriptions.push(
-    commands.registerCommand('tailwindCSS.showOutput', () => {
-      if (outputChannel) {
-        outputChannel.show()
-      }
-    }),
-  )
+  const showOutputHandler = () => {
+    if (outputChannel) {
+      outputChannel.show()
+    }
+  }
+  context.subscriptions.push(safeRegisterCommand('tailwindFix.showOutput', showOutputHandler))
 
-  await commands.executeCommand('setContext', 'tailwindCSS.hasOutputChannel', true)
+  await commands.executeCommand('setContext', 'tailwindFix.hasOutputChannel', true)
 
   outputChannel.appendLine(`Locating server…`)
 
@@ -197,35 +201,33 @@ export async function activate(context: ExtensionContext) {
     })
   }
 
-  context.subscriptions.push(
-    commands.registerCommand('tailwindCSS.sortSelection', async () => {
-      try {
-        await sortSelection()
-      } catch (error) {
-        Window.showWarningMessage(`Couldn’t sort Tailwind classes: ${(error as any)?.message}`)
-      }
-    }),
-  )
+  const sortSelectionHandler = async () => {
+    try {
+      await sortSelection()
+    } catch (error) {
+      Window.showWarningMessage(`Couldn’t sort Tailwind classes: ${(error as any)?.message}`)
+    }
+  }
+  context.subscriptions.push(safeRegisterCommand('tailwindFix.sortSelection', sortSelectionHandler))
 
-  context.subscriptions.push(
-    commands.registerCommand('tailwindCSS.fixAll', async () => {
-      try {
-        await fixCurrentFileCommand()
-      } catch (error) {
-        Window.showErrorMessage(`Couldn’t fix Tailwind classes: ${(error as any)?.message}`)
-      }
-    }),
-  )
+  const fixAllHandler = async () => {
+    try {
+      await fixCurrentFileCommand()
+    } catch (error) {
+      Window.showErrorMessage(`Couldn’t fix Tailwind classes: ${(error as any)?.message}`)
+    }
+  }
+  context.subscriptions.push(safeRegisterCommand('tailwindFix.fixAll', fixAllHandler))
 
-  context.subscriptions.push(
-    commands.registerCommand('tailwindCSS.fixWorkspace', async () => {
-      try {
-        await fixWorkspaceCommand()
-      } catch (error) {
-        Window.showErrorMessage(`Couldn’t fix workspace Tailwind classes: ${(error as any)?.message}`)
-      }
-    }),
-  )
+  const fixWorkspaceHandler = async () => {
+    try {
+      await fixWorkspaceCommand()
+    } catch (error) {
+      Window.showErrorMessage(`Couldn’t fix workspace Tailwind classes: ${(error as any)?.message}`)
+    }
+  }
+  context.subscriptions.push(safeRegisterCommand('tailwindFix.fixWorkspace', fixWorkspaceHandler))
+
 
 
   context.subscriptions.push(
