@@ -50,10 +50,12 @@ export async function fixCurrentFileCommand(): Promise<void> {
   })
 
   if (success) {
+    await doc.save()
     const totalChanges = result.edits.reduce((acc, e) => acc + e.changes.length, 0)
     Window.setStatusBarMessage(
-      `Tailwind CSS: Fixed and optimized ${totalChanges} class issues across ${result.edits.length} elements.`,
+      `Tailwind CSS IntelliSense Fix: Fixed and optimized ${totalChanges} class issue(s) across ${result.edits.length} element(s).`,
       4000,
     )
   }
 }
+

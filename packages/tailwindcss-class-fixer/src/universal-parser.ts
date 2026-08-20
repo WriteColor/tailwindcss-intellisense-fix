@@ -222,5 +222,32 @@ export function extractClassRanges(
   }
 
   // Sort ranges in ascending order of start position
-  return results.sort((a, b) => a.start - b.start)
+  results.sort((a, b) => a.start - b.start || b.end - a.end)
+
+  // Remove overlapping ranges: if an outer container range contains inner sub-ranges, keep the inner ones
+  const filtered: ExtractedClassRange[] = []
+  for (let i = 0; i < results.length; i++) {
+    const current = results[i]
+    let isContainedByAnother = false
+    let containsAnother = false
+
+    for (let j = 0; j < results.length; j++) {
+      if (i === j) continue
+      const other = results[j]
+      if (current.start >= other.start && current.end <= other.end) {
+        // current is inside other -> other is an outer container
+      }
+      if (other.start >= current.start && other.end <= current.end && !(other.start === current.start && other.end === current.end)) {
+        containsAnother = true
+        break
+      }
+    }
+
+    if (!containsAnother) {
+      filtered.push(current)
+    }
+  }
+
+  return filtered.sort((a, b) => a.start - b.start)
 }
+

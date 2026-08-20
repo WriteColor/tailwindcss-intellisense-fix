@@ -9,6 +9,8 @@ const RADIUS_PREFIX_REGEX =
 const BORDER_WIDTH_PREFIX_REGEX =
   /^(border|border-t|border-b|border-l|border-r|border-x|border-y|border-s|border-e|divide-x|divide-y|outline|ring)-\[(\d+)px\]$/
 
+const CSS_VAR_REGEX = /^([a-zA-Z0-9_\-]+)-\[var\((--[a-zA-Z0-9_\-]+)\)\]$/
+
 const FONT_SIZE_REGEX = /^text-\[([\d.]+)(px|rem)\]$/
 const FONT_WEIGHT_REGEX = /^font-\[(\d+)\]$/
 const TRACKING_REGEX = /^tracking-\[(-?[\d.]+)em\]$/
@@ -129,12 +131,25 @@ export function convertToCanonicalValue(className: string): string | null {
   const important = base.startsWith('!') || base.endsWith('!') ? '!' : ''
   base = base.replace(/!/g, '')
 
-  // 1. Check v4 utility renames
+  // 1. Check CSS variables canonical shorthand in Tailwind v4: [var(--name)] -> (--name)
+  const cssVarMatch = CSS_VAR_REGEX.exec(base)
+  if (cssVarMatch) {
+    const [, prefix, varName] = cssVarMatch
+    return `${variants}${important}${prefix}-(${varName})`
+  }
+
+  // 2. Check v4 utility renames
   if (base === 'break-words') {
     return `${variants}${important}wrap-break-word`
   }
+  if (base === 'break-normal') {
+    return `${variants}${important}wrap-normal`
+  }
+  if (base === 'break-all') {
+    return `${variants}${important}wrap-break-all`
+  }
 
-  // 2. Check spacing & sizing arbitrary values [Npx] or [Nrem]
+  // 3. Check spacing & sizing arbitrary values [Npx] or [Nrem]
   const spacingMatch = SPACING_PREFIX_REGEX.exec(base)
   if (spacingMatch) {
     const [, outerNeg, prefix, innerNeg, numStr, unit] = spacingMatch
@@ -145,12 +160,22 @@ export function convertToCanonicalValue(className: string): string | null {
 
     if (unit === 'px') {
       const scale = num / 4
-      if (Number.isInteger(scale) || scale % 0.25 === 0 || scale % 0.5 === 0) {
+      if (
+        Number.isInteger(scale) ||
+        scale % 0.25 === 0 ||
+        scale % 0.5 === 0 ||
+        scale.toString().length <= 5
+      ) {
         numericScale = scale
       }
     } else if (unit === 'rem') {
       const scale = num * 4
-      if (Number.isInteger(scale) || scale % 0.25 === 0 || scale % 0.5 === 0) {
+      if (
+        Number.isInteger(scale) ||
+        scale % 0.25 === 0 ||
+        scale % 0.5 === 0 ||
+        scale.toString().length <= 5
+      ) {
         numericScale = scale
       }
     }
@@ -162,7 +187,7 @@ export function convertToCanonicalValue(className: string): string | null {
     }
   }
 
-  // 3. Check border radius [Npx] / [Nrem]
+  // 4. Check border radius [Npx] / [Nrem]
   const radiusMatch = RADIUS_PREFIX_REGEX.exec(base)
   if (radiusMatch) {
     const [, prefix, numStr, unit] = radiusMatch
@@ -181,7 +206,7 @@ export function convertToCanonicalValue(className: string): string | null {
     }
   }
 
-  // 4. Check border width / outline / ring
+  // 5. Check border width / outline / ring
   const borderMatch = BORDER_WIDTH_PREFIX_REGEX.exec(base)
   if (borderMatch) {
     const [, prefix, numStr] = borderMatch
@@ -198,7 +223,7 @@ export function convertToCanonicalValue(className: string): string | null {
     }
   }
 
-  // 5. Check font size
+  // 6. Check font size
   const fontMatch = FONT_SIZE_REGEX.exec(base)
   if (fontMatch) {
     const [, numStr, unit] = fontMatch
@@ -209,7 +234,7 @@ export function convertToCanonicalValue(className: string): string | null {
     }
   }
 
-  // 6. Check font weight
+  // 7. Check font weight
   const weightMatch = FONT_WEIGHT_REGEX.exec(base)
   if (weightMatch) {
     const [, numStr] = weightMatch
@@ -219,7 +244,7 @@ export function convertToCanonicalValue(className: string): string | null {
     }
   }
 
-  // 7. Check tracking
+  // 8. Check tracking
   const trackingMatch = TRACKING_REGEX.exec(base)
   if (trackingMatch) {
     const [, val] = trackingMatch
@@ -229,7 +254,7 @@ export function convertToCanonicalValue(className: string): string | null {
     }
   }
 
-  // 8. Check leading
+  // 9. Check leading
   const leadingMatch = LEADING_REGEX.exec(base)
   if (leadingMatch) {
     const [, val] = leadingMatch
@@ -239,7 +264,7 @@ export function convertToCanonicalValue(className: string): string | null {
     }
   }
 
-  // 9. Check opacity
+  // 10. Check opacity
   const opacityMatch = OPACITY_REGEX.exec(base)
   if (opacityMatch) {
     const [, valStr] = opacityMatch
@@ -252,14 +277,14 @@ export function convertToCanonicalValue(className: string): string | null {
     }
   }
 
-  // 10. Check z-index
+  // 11. Check z-index
   const zMatch = Z_INDEX_REGEX.exec(base)
   if (zMatch) {
     const [, val] = zMatch
     return `${variants}${important}z-${val}`
   }
 
-  // 11. Check blur
+  // 12. Check blur
   const blurMatch = BLUR_REGEX.exec(base)
   if (blurMatch) {
     const [, numStr] = blurMatch
