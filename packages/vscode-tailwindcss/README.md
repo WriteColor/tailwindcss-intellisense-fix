@@ -210,17 +210,17 @@ jobs:
 
 ## ⚙ Configuration & Settings
 
-Add these options to your `.vscode/settings.json` or global user settings:
+Add these options to your `.vscode/settings.json` or global user settings (supports `tailwindFix.*` with automatic fallback to `tailwindCSS.*`):
 
 ```jsonc
 {
   // Enable or disable auto-fixing features
-  "tailwindCSS.autoFix.enable": true,
-  "tailwindCSS.autoFix.dedupe": true,
-  "tailwindCSS.autoFix.resolveConflicts": true,
-  "tailwindCSS.autoFix.sort": true,
-  "tailwindCSS.autoFix.migrateVersion": "v4", // "v4" | "v3" | "off"
-  "tailwindCSS.autoFix.fixTypos": true,
+  "tailwindFix.autoFix.enable": true,
+  "tailwindFix.autoFix.dedupe": true,
+  "tailwindFix.autoFix.resolveConflicts": true,
+  "tailwindFix.autoFix.sort": true,
+  "tailwindFix.autoFix.migrateVersion": "v4", // "v4", "v3", or false
+  "tailwindFix.autoFix.fixTypos": true,
 
   // Automatically fix, deduplicate and sort on Save
   "editor.codeActionsOnSave": {
@@ -228,16 +228,15 @@ Add these options to your `.vscode/settings.json` or global user settings:
   },
 
   // Custom attributes and functions to inspect
-  "tailwindCSS.classAttributes": [
+  "tailwindFix.classAttributes": [
     "class",
     "className",
     "ngClass",
-    "class:list",
     ":class"
   ],
-  "tailwindCSS.classFunctions": [
-    "clsx",
+  "tailwindFix.classFunctions": [
     "cva",
+    "clsx",
     "twMerge",
     "cn",
     "classnames",
@@ -248,14 +247,27 @@ Add these options to your `.vscode/settings.json` or global user settings:
 
 ---
 
-## 🎮 IDE Commands Palette
+## 🎮 IDE Command Palette & Right-Click Context Menus
 
-Press `Ctrl+Shift+P` (or `Cmd+Shift+P` on macOS) to access:
+### A. Right-Click Context Menus (No need to open Command Palette)
+- **Right-Click on any file(s) or folder(s) in the File Explorer:**
+  `Tailwind CSS IntelliSense Fix: Fix Tailwind Issues in Selected File(s) / Folder(s)`
+  *(Recursively processes all selected files and folders with a progress bar).*
+- **Right-Click inside any open file in the Editor:**
+  - `Tailwind CSS IntelliSense Fix: Fix, Optimize & Sort Classes in Current File`
+  - `Tailwind CSS IntelliSense Fix: Sort Selected Classes` *(when text is selected)*
+- **Right-Click on the File Tab header (Tab Context):**
+  `Tailwind CSS IntelliSense Fix: Fix, Optimize & Sort Classes in Current File`
+- **Quick-Action Button in Top Editor Title Bar:**
+  Magic Sparkle icon (`$(sparkle)`) in the top-right corner to fix the active file with a single click.
 
-- **`Tailwind CSS: Fix, Optimize & Sort Classes in Current File`** (`tailwindCSS.fixAll`): Instantly analyzes, deduplicates, migrates, and sorts classes in the active document.
-- **`Tailwind CSS: Fix All Tailwind Issues in Entire Workspace`** (`tailwindCSS.fixWorkspace`): Runs an interactive batch scan across all project files with progress tracking.
-- **`Tailwind CSS: Sort Selection`** (`tailwindCSS.sortSelection`): Sorts selected class names canonically.
-- **`Tailwind CSS: Show Output`** (`tailwindCSS.showOutput`): Opens the Language Server diagnostic output log.
+### B. Command Palette (`Ctrl+Shift+P` / `Cmd+Shift+P`)
+- **`Tailwind CSS IntelliSense Fix: Fix, Optimize & Sort Classes in Current File`** (`tailwindFix.fixAll`): Analyzes, deduplicates, migrates, and sorts classes in the active document.
+- **`Tailwind CSS IntelliSense Fix: Fix All Tailwind Issues in Entire Workspace`** (`tailwindFix.fixWorkspace`): Runs an interactive batch scan across all project files with progress tracking.
+- **`Tailwind CSS IntelliSense Fix: Fix Tailwind Issues in Selected File(s) / Folder(s)`** (`tailwindFix.fixExplorerSelection`): Recursively fixes selected items in the explorer.
+- **`Tailwind CSS IntelliSense Fix: Sort Selected Classes`** (`tailwindFix.sortSelection`): Canonicalizes selected class names.
+- **`Tailwind CSS IntelliSense Fix: Show Output Channel`** (`tailwindFix.showOutput`): Opens the Language Server diagnostic log.
+
 
 ---
 

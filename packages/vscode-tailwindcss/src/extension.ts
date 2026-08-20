@@ -37,6 +37,8 @@ import { isExcluded, mergeExcludes } from './exclusions'
 import { createApi } from './api'
 import { fixCurrentFileCommand } from './commands/fixAllCommand'
 import { fixWorkspaceCommand } from './commands/workspaceFixCommand'
+import { fixExplorerSelectionCommand } from './commands/explorerFixCommand'
+
 
 const colorNames = Object.keys(namedColors)
 
@@ -227,6 +229,18 @@ export async function activate(context: ExtensionContext) {
     }
   }
   context.subscriptions.push(safeRegisterCommand('tailwindFix.fixWorkspace', fixWorkspaceHandler))
+
+  const fixExplorerSelectionHandler = async (clickedUri?: Uri, selectedUris?: Uri[]) => {
+    try {
+      await fixExplorerSelectionCommand(clickedUri, selectedUris)
+    } catch (error) {
+      Window.showErrorMessage(`Couldn’t fix selected items: ${(error as any)?.message}`)
+    }
+  }
+  context.subscriptions.push(
+    safeRegisterCommand('tailwindFix.fixExplorerSelection', fixExplorerSelectionHandler),
+  )
+
 
 
 

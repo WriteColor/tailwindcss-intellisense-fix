@@ -209,34 +209,33 @@ jobs:
 
 ## ⚙ Configuración y Parámetros
 
-Agrega estas opciones en tu archivo `.vscode/settings.json` o configuración global:
+Agrega estas opciones en tu archivo `.vscode/settings.json` o configuración global (compatible con el prefijo `tailwindFix.*` y con fallback transparente a `tailwindCSS.*`):
 
 ```jsonc
 {
-  // Activa o desactiva las funciones automáticas
-  "tailwindCSS.autoFix.enable": true,
-  "tailwindCSS.autoFix.dedupe": true,
-  "tailwindCSS.autoFix.resolveConflicts": true,
-  "tailwindCSS.autoFix.sort": true,
-  "tailwindCSS.autoFix.migrateVersion": "v4", // "v4" | "v3" | "off"
-  "tailwindCSS.autoFix.fixTypos": true,
+  // Activa o desactiva las funciones automáticas del motor Fixer
+  "tailwindFix.autoFix.enable": true,
+  "tailwindFix.autoFix.dedupe": true,
+  "tailwindFix.autoFix.resolveConflicts": true,
+  "tailwindFix.autoFix.sort": true,
+  "tailwindFix.autoFix.migrateVersion": "v4", // "v4", "v3" o false
+  "tailwindFix.autoFix.fixTypos": true,
 
-  // Reparar, deduplicar y ordenar automáticamente al Guardar
+  // Ejecución automática al guardar el archivo (Opcional)
   "editor.codeActionsOnSave": {
     "source.fixAll.tailwind": "explicit"
   },
 
-  // Atributos y funciones adicionales para analizar
-  "tailwindCSS.classAttributes": [
+  // Atributos y funciones personalizadas (clsx, cva, cn, twMerge, etc.)
+  "tailwindFix.classAttributes": [
     "class",
     "className",
     "ngClass",
-    "class:list",
     ":class"
   ],
-  "tailwindCSS.classFunctions": [
-    "clsx",
+  "tailwindFix.classFunctions": [
     "cva",
+    "clsx",
     "twMerge",
     "cn",
     "classnames",
@@ -247,14 +246,26 @@ Agrega estas opciones en tu archivo `.vscode/settings.json` o configuración glo
 
 ---
 
-## 🎮 Paleta de Comandos del IDE
+## 🎮 Paleta de Comandos y Menús Contextuales (Clic Derecho)
 
-Presiona `Ctrl+Shift+P` (o `Cmd+Shift+P` en macOS) para ejecutar:
+### A. Acceso Directo por Clic Derecho (Sin abrir la paleta)
+- **Clic derecho sobre cualquier archivo, múltiples archivos o carpetas en el Explorador:**
+  `Tailwind CSS IntelliSense Fix: Fix Tailwind Issues in Selected File(s) / Folder(s)`
+  *(Escanea y repara recursivamente todos los archivos seleccionados con barra de progreso).*
+- **Clic derecho dentro de cualquier archivo abierto en el Editor:**
+  - `Tailwind CSS IntelliSense Fix: Fix, Optimize & Sort Classes in Current File`
+  - `Tailwind CSS IntelliSense Fix: Sort Selected Classes` *(cuando hay texto seleccionado)*
+- **Clic derecho en la pestaña del archivo superior (Tab Context):**
+  `Tailwind CSS IntelliSense Fix: Fix, Optimize & Sort Classes in Current File`
+- **Botón de Acción Rápida en la Barra Superior:**
+  Icono de varita mágica/destello (`$(sparkle)`) en la esquina superior derecha del editor para reparar el archivo activo con 1 solo clic.
 
-- **`Tailwind CSS: Fix, Optimize & Sort Classes in Current File`** (`tailwindCSS.fixAll`): Analiza, deduplica, migra y ordena las clases del documento activo.
-- **`Tailwind CSS: Fix All Tailwind Issues in Entire Workspace`** (`tailwindCSS.fixWorkspace`): Ejecuta un escaneo masivo interactivo en todos los archivos del proyecto con barra de progreso.
-- **`Tailwind CSS: Sort Selection`** (`tailwindCSS.sortSelection`): Ordena canónicamente el texto o clases seleccionadas.
-- **`Tailwind CSS: Show Output`** (`tailwindCSS.showOutput`): Muestra la consola de diagnóstico del Language Server.
+### B. Paleta de Comandos (`Ctrl+Shift+P` / `Cmd+Shift+P`)
+- **`Tailwind CSS IntelliSense Fix: Fix, Optimize & Sort Classes in Current File`** (`tailwindFix.fixAll`): Analiza, deduplica, migra y ordena las clases del documento activo.
+- **`Tailwind CSS IntelliSense Fix: Fix All Tailwind Issues in Entire Workspace`** (`tailwindFix.fixWorkspace`): Ejecuta un escaneo masivo interactivo en todos los archivos del proyecto con barra de progreso.
+- **`Tailwind CSS IntelliSense Fix: Fix Tailwind Issues in Selected File(s) / Folder(s)`** (`tailwindFix.fixExplorerSelection`): Repara archivos o carpetas seleccionadas en el explorador.
+- **`Tailwind CSS IntelliSense Fix: Sort Selected Classes`** (`tailwindFix.sortSelection`): Ordena canónicamente el texto o clases seleccionadas.
+- **`Tailwind CSS IntelliSense Fix: Show Output Channel`** (`tailwindFix.showOutput`): Muestra la consola de diagnóstico del Language Server.
 
 ---
 

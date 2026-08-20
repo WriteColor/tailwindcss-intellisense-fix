@@ -62,25 +62,70 @@
     "commands": [
       {
         "command": "tailwindFix.showOutput",
-        "title": "Tailwind CSS: Show Output",
+        "category": "Tailwind CSS IntelliSense Fix",
+        "title": "Show Output Channel",
         "enablement": "tailwindFix.hasOutputChannel"
       },
       {
         "command": "tailwindFix.sortSelection",
-        "title": "Tailwind CSS: Sort Selection",
-        "enablement": "editorHasSelection && (resourceScheme == file || resourceScheme == vscode-remote) && tailwindCSS.activeTextEditorSupportsClassSorting"
+        "category": "Tailwind CSS IntelliSense Fix",
+        "title": "Sort Selected Classes",
+        "enablement": "editorHasSelection && (resourceScheme == file || resourceScheme == vscode-remote) && tailwindFix.activeTextEditorSupportsClassSorting"
       },
       {
         "command": "tailwindFix.fixAll",
-        "title": "Tailwind CSS: Fix, Optimize & Sort Classes in Current File",
-        "enablement": "(resourceScheme == file || resourceScheme == vscode-remote)"
+        "category": "Tailwind CSS IntelliSense Fix",
+        "title": "Fix, Optimize & Sort Classes in Current File",
+        "enablement": "(resourceScheme == file || resourceScheme == vscode-remote)",
+        "icon": "$(sparkle)"
       },
       {
         "command": "tailwindFix.fixWorkspace",
-        "title": "Tailwind CSS: Fix All Tailwind Issues in Entire Workspace",
+        "category": "Tailwind CSS IntelliSense Fix",
+        "title": "Fix All Tailwind Issues in Entire Workspace",
+        "enablement": "(resourceScheme == file || resourceScheme == vscode-remote)"
+      },
+      {
+        "command": "tailwindFix.fixExplorerSelection",
+        "category": "Tailwind CSS IntelliSense Fix",
+        "title": "Fix Tailwind Issues in Selected File(s) / Folder(s)",
         "enablement": "(resourceScheme == file || resourceScheme == vscode-remote)"
       }
     ],
+    "menus": {
+      "editor/context": [
+        {
+          "command": "tailwindFix.fixAll",
+          "group": "1_modification@100",
+          "when": "editorTextFocus"
+        },
+        {
+          "command": "tailwindFix.sortSelection",
+          "group": "1_modification@101",
+          "when": "editorHasSelection"
+        }
+      ],
+      "editor/title/context": [
+        {
+          "command": "tailwindFix.fixAll",
+          "group": "1_modification"
+        }
+      ],
+      "explorer/context": [
+        {
+          "command": "tailwindFix.fixExplorerSelection",
+          "group": "7_modification"
+        }
+      ],
+      "editor/title": [
+        {
+          "command": "tailwindFix.fixAll",
+          "group": "navigation",
+          "when": "resourceScheme == file || resourceScheme == vscode-remote"
+        }
+      ]
+    },
+
     "grammars": [
       {
         "language": "tailwindcss",
