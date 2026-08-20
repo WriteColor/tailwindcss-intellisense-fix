@@ -1,10 +1,15 @@
 import type { ExtractedClassRange } from './types'
 
-// Regex for standard HTML / JSX / Template class attributes
-const ATTR_REGEX = /(?:class|className|ngClass|class:list|\[class\]|\[ngClass\])\s*=\s*(["'`{])([\s\S]*?)\1/gi
+// Regex for HTML / JSX / Vue / Alpine / Svelte / Astro class attributes
+const ATTR_REGEX =
+  /(?::class|v-bind:class|x-bind:class|class|className|ngClass|class:list|\[class\]|\[ngClass\])\s*=\s*(["'`{])([\s\S]*?)\1/gi
 
-// Regex for helper function calls: clsx, cva, twMerge, cn, classnames, tw`...`
-const HELPER_REGEX = /\b(?:clsx|cva|twMerge|cn|classnames|tw)\s*(?:\(\s*|\`)([\s\S]*?)(?:\)|\`)/gi
+// Regex for Blade directive: @class([...])
+const BLADE_CLASS_REGEX = /@class\s*\(\s*(\[[\s\S]*?\])\s*\)/gi
+
+// Regex for helper function calls: clsx, cva, twMerge, cn, classnames, tw`...`, tv`...`
+const HELPER_REGEX =
+  /\b(?:clsx|cva|twMerge|cn|classnames|tw|tv)\s*(?:\(\s*|\`)([\s\S]*?)(?:\)|\`)/gi
 
 // Regex for string literals inside code or helpers
 const STRING_LITERAL_REGEX = /(["'`])((?:\\.|(?!\1)[^\\])*)\1/g
@@ -18,7 +23,10 @@ const RUST_CLASSES_REGEX = /(?:classes!|class!)\s*[\(\{]\s*["']([^"']+)["']\s*[\
 /**
  * Extracts class strings and exact byte ranges from any source code or template file.
  */
-export function extractClassRanges(content: string, fileName?: string): ExtractedClassRange[] {
+export function extractClassRanges(
+  content: string,
+  _fileName?: string,
+): ExtractedClassRange[] {
   const results: ExtractedClassRange[] = []
   const seenRanges = new Set<string>()
 
@@ -45,7 +53,12 @@ export function extractClassRanges(content: string, fileName?: string): Extracte
   }
 
   // Helper to extract segments from strings containing template interpolation ${...}
-  function extractTemplateSegments(text: string, baseOffset: number, delimiter: string, context: ExtractedClassRange['context']) {
+  function extractTemplateSegments(
+    text: string,
+    baseOffset: number,
+    delimiter: string,
+    context: ExtractedClassRange['context'],
+  ) {
     if (!text.includes('${')) {
       addRange({
         start: baseOffset,
@@ -109,7 +122,7 @@ export function extractClassRanges(content: string, fileName?: string): Extracte
     }
   }
 
-  // 2. Check HTML / JSX / Template class attributes
+  // 2. Check HTML / JSX / Vue / Alpine / Svelte class attributes
   let attrMatch: RegExpExecArray | null
   while ((attrMatch = ATTR_REGEX.exec(content)) !== null) {
     const rawAttrValue = attrMatch[2]
@@ -127,7 +140,7 @@ export function extractClassRanges(content: string, fileName?: string): Extracte
     } else if (delimiter === '`') {
       extractTemplateSegments(rawAttrValue, valueStart, delimiter, 'html')
     } else {
-      // Dynamic expression like class={...}
+      // Dynamic expression like class={...} or :class="{...}"
       let strMatch: RegExpExecArray | null
       while ((strMatch = STRING_LITERAL_REGEX.exec(rawAttrValue)) !== null) {
         const subRaw = strMatch[2]
@@ -147,17 +160,34 @@ export function extractClassRanges(content: string, fileName?: string): Extracte
     }
   }
 
-  // 3. Check Helper Functions (clsx, cva, twMerge, cn, tw`...`)
+  // 3. Check Blade Directive @class([...])
+  let bladeMatch: RegExpExecArray | null
+  while ((bladeMatch = BLADE_CLASS_REGEX.exec(content)) !== null) {
+    const arrayContent = bladeMatch[1]
+    const arrayStart = bladeMatch.index + bladeMatch[0].indexOf(arrayContent)
+    let strMatch: RegExpExecArray | null
+    while ((strMatch = STRING_LITERAL_REGEX.exec(arrayContent)) !== null) {
+      const subRaw = strMatch[2]
+      const subStart = arrayStart + strMatch.index + 1
+      addRange({
+        start: subStart,
+        end: subStart + subRaw.length,
+        raw: subRaw,
+        delimiter: strMatch[1],
+        context: 'template',
+      })
+    }
+  }
+
+  // 4. Check Helper Functions (clsx, cva, twMerge, cn, tw`...`, tv`...`)
   let helperMatch: RegExpExecArray | null
   while ((helperMatch = HELPER_REGEX.exec(content)) !== null) {
     const helperArgs = helperMatch[1]
     const argsStart = helperMatch.index + helperMatch[0].indexOf(helperArgs)
 
     if (helperMatch[0].includes('`')) {
-      // Tagged template literal: tw`p-4 text-white`
       extractTemplateSegments(helperArgs, argsStart, '`', 'helper')
     } else {
-      // Function call arguments: cn('p-4', 'text-white')
       let strMatch: RegExpExecArray | null
       while ((strMatch = STRING_LITERAL_REGEX.exec(helperArgs)) !== null) {
         const subRaw = strMatch[2]
@@ -177,7 +207,7 @@ export function extractClassRanges(content: string, fileName?: string): Extracte
     }
   }
 
-  // 4. Check Rust / Leptos / Yew / Dioxus macros
+  // 5. Check Rust / Leptos / Yew / Dioxus macros
   let rustMatch: RegExpExecArray | null
   while ((rustMatch = RUST_CLASSES_REGEX.exec(content)) !== null) {
     const raw = rustMatch[1]
